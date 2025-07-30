@@ -5,5 +5,12 @@
     "url": "https://github.com/Jesewe/VioletWing",
     "timestamp": "2025-07-12",
     "message": "Introducing VioletWing Notifications, a new feature that keeps you updated with the latest changes and improvements in the VioletWing project. Stay informed about new releases, bug fixes, and enhancements directly from the development team."
+  },
+  {
+    "number": "2",
+    "title": "Offsets in VioletWing",
+    "url": "https://github.com/Jesewe/VioletWing?tab=readme-ov-file#troubleshooting",
+    "timestamp": "2025-07-30",
+    "message": "If you see an error message saying \"Could not read memory at\", this does not mean that there is a program error. We have no influence on the operation of offsets. Please wait for the a2x/cs2-dumper offset update."
   }
 ]
