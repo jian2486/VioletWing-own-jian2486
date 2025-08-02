@@ -1,6 +1,9 @@
 import customtkinter as ctk
 import threading
 import orjson
+import requests
+import time
+from pathlib import Path
 from classes.logger import Logger
 from classes.utility import Utility
 from classes.config_manager import ConfigManager
@@ -278,33 +281,102 @@ def create_stat_card(main_window, parent, title, value, color, subtitle):
     return card, value_label
 
 def fetch_last_update(main_window):
-    """Fetch and display the last offset update time."""
+    """Fetch and display the last offset update time with retry, caching, and authentication."""
     def update_callback():
-        try:
-            import requests
-            from dateutil.parser import parse as parse_date
-            
-            # Fetch latest commit data from GitHub
-            response = requests.get("https://api.github.com/repos/a2x/cs2-dumper/commits/main")
-            response.raise_for_status()
-            commit_data = orjson.loads(response.content)
-            commit_timestamp = commit_data["commit"]["committer"]["date"]
-            
-            # Parse and format the timestamp
-            last_update_dt = parse_date(commit_timestamp)
-            formatted_timestamp = last_update_dt.strftime("%m/%d/%Y %H:%M")
-            
-            # Update UI with formatted timestamp
-            main_window.root.after(0, lambda: main_window.update_value_label.configure(
-                text=formatted_timestamp, text_color="#22c55e"
-            ))
-        except Exception as e:
-            # Display error if fetch fails
-            main_window.root.after(0, lambda: main_window.update_value_label.configure(
-                text="Error", text_color="#ef4444"
-            ))
-            logger.error("Failed to fetch last update: %s", e)
-    
+        max_retries = 3
+        retry_delay = 5  # seconds
+        cache_file = Path(ConfigManager.CONFIG_DIRECTORY) / "last_update_cache.txt"
+
+        def load_cached_timestamp():
+            try:
+                with open(cache_file, 'r') as f:
+                    return f.read().strip()
+            except FileNotFoundError:
+                return None
+
+        def save_cached_timestamp(timestamp):
+            try:
+                with open(cache_file, 'w') as f:
+                    f.write(timestamp)
+            except IOError as e:
+                logger.error("Failed to save cached timestamp: %s", e)
+
+        def update_ui(text, color):
+            # Schedule UI update in the main thread
+            try:
+                main_window.root.after(0, lambda: (
+                    main_window.update_value_label.configure(text=text, text_color=color)
+                    if main_window.root.winfo_exists() and hasattr(main_window, 'update_value_label')
+                    else None
+                ))
+            except Exception as e:
+                pass
+
+        # Try loading cached timestamp first
+        cached_timestamp = load_cached_timestamp()
+        if cached_timestamp:
+            logger.info("Using cached timestamp: %s", cached_timestamp)
+            update_ui(cached_timestamp, "#22c55e")
+
+        # Load config to check for GitHub token
+        config = ConfigManager.load_config()
+        github_token = config.get("GitHub", {}).get("AccessToken", None)
+
+        # Set up headers for GitHub API
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "VioletWing-App"
+        }
+        if github_token:
+            headers["Authorization"] = f"Bearer {github_token}"
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(
+                    "https://api.github.com/repos/a2x/cs2-dumper/commits/main",
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                commit_data = orjson.loads(response.content)
+                commit_timestamp = commit_data["commit"]["committer"]["date"]
+
+                # Parse and format the timestamp
+                from dateutil.parser import parse as parse_date
+                last_update_dt = parse_date(commit_timestamp)
+                formatted_timestamp = last_update_dt.strftime("%m/%d/%Y %H:%M")
+
+                # Cache the timestamp
+                save_cached_timestamp(formatted_timestamp)
+
+                # Update UI
+                update_ui(formatted_timestamp, "#22c55e")
+                logger.info("Successfully fetched last update: %s", formatted_timestamp)
+                return
+
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 403:
+                    logger.warning("GitHub API rate limit exceeded. Attempt %d/%d", attempt + 1, max_retries)
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        logger.error("Max retries reached for GitHub API rate limit.")
+                        update_ui("Rate Limit Exceeded", "#ef4444")
+                        return
+                else:
+                    logger.error("HTTP error fetching last update: %s", e)
+                    update_ui("Error", "#ef4444")
+                    return
+            except Exception as e:
+                logger.error("Failed to fetch last update: %s", e)
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                update_ui("Error", "#ef4444")
+                return
+
     # Run fetch in a separate thread
     threading.Thread(target=update_callback, daemon=True).start()
 
