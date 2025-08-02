@@ -56,7 +56,7 @@ def create_reset_section(main_window, parent):
 
     ctk.CTkLabel(
         header,
-        text="🔄  Reset to Default",
+        text="⚙️  Configuration Management",
         font=("Chivo", 24, "bold"),
         text_color=("#1f2937", "#ffffff"),
         anchor="w"
@@ -64,24 +64,46 @@ def create_reset_section(main_window, parent):
 
     ctk.CTkLabel(
         header,
-        text="Restore all settings to their default values",
+        text="Manage configuration files and settings",
         font=("Gambetta", 14),
         text_color=("#64748b", "#94a3b8"),
         anchor="e"
     ).pack(side="right")
 
-    reset_button = ctk.CTkButton(
-        section,
-        text="Reset All Settings",
+    button_frame = ctk.CTkFrame(section, fg_color="transparent")
+    button_frame.pack(fill="x", padx=40, pady=(0, 40))
+
+    open_config_button = ctk.CTkButton(
+        button_frame,
+        text="📁  Open Config Directory",
         font=("Chivo", 16, "bold"),
-        corner_radius=12,
-        fg_color=("#D5006D", "#E91E63"),
-        hover_color=("#B8004A", "#C2185B"),
+        corner_radius=16,
+        fg_color=("#0d9488", "#14b8a6"),
+        hover_color=("#0f766e", "#0d9488"),
+        border_width=2,
+        border_color=("#a7f3d0", "#134e4a"),
         text_color="#ffffff",
-        height=50,
+        width=280,
+        height=56,
+        command=main_window.open_config_directory
+    )
+    open_config_button.pack(side="left", padx=(0, 20))
+
+    reset_button = ctk.CTkButton(
+        button_frame,
+        text="🔄  Reset All Settings",
+        font=("Chivo", 16, "bold"),
+        corner_radius=16,
+        fg_color=("#dc2626", "#ef4444"),
+        hover_color=("#b91c1c", "#dc2626"),
+        border_width=2,
+        border_color=("#fecaca", "#7f1d1d"),
+        text_color="#ffffff",
+        width=280,
+        height=56,
         command=main_window.reset_to_default_settings
     )
-    reset_button.pack(fill="x", padx=40, pady=(0, 40))
+    reset_button.pack(side="left")
 
 def create_features_section(main_window, parent):
     """Create section for configuring main application features."""
