@@ -101,7 +101,12 @@ Download the latest executable from the [Releases](https://github.com/Jesewe/Vio
 
 ## Contributing
 
-Contributions are welcome! Open an issue or submit a pull request on the [GitHub repository](https://github.com/Jesewe/VioletWing).
+We welcome contributions to VioletWing!
+
+Before you start, please read our [**Contributing Guidelines**](CONTRIBUTING.md).
+
+- To report a bug or suggest a feature, please [**open an issue**](https://github.com/Jesewe/VioletWing/issues) using the appropriate template.
+- To submit your changes, please [**create a pull request**](https://github.com/Jesewe/VioletWing/pulls).
 
 ## Disclaimer
 
@@ -109,4 +114,4 @@ This tool is for educational purposes only. Using automation tools in online gam
 
 ## License
 
-Licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Licensed under the GPL-3.0 License. See the [LICENSE](LICENSE) file for details.
