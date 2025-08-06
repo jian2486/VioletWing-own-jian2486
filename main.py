@@ -16,28 +16,8 @@ def setup_signal_handlers(logger):
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-def validate_environment():
-    """Validate that the application environment is ready."""
-    # Check if required directories exist
-    required_dirs = ['classes', 'gui']
-    missing_dirs = []
-    
-    for dir_name in required_dirs:
-        if not Path(dir_name).exists():
-            missing_dirs.append(dir_name)
-    
-    if missing_dirs:
-        print(f"Error: Missing required directories: {', '.join(missing_dirs)}", file=sys.stderr)
-        return False
-    
-    return True
-
 def main():
-    """Main application entry point."""
-    # Validate environment before proceeding
-    if not validate_environment():
-        sys.exit(1)
-    
+    """Main application entry point."""    
     # Set up logging for the application.
     try:
         Logger.setup_logging()
