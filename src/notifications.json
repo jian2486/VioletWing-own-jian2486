@@ -12,5 +12,12 @@
     "url": "https://github.com/Jesewe/VioletWing?tab=readme-ov-file#troubleshooting",
     "timestamp": "2025-07-30",
     "message": "If you see an error message saying \"Could not read memory at\", this does not mean that there is a program error. We have no influence on the operation of offsets. Please wait for the a2x/cs2-dumper offset update."
+  },
+  {
+    "number": "3",
+    "title": "VioletWing Update",
+    "url": "https://github.com/Jesewe/VioletWing/releases/tag/v1.2.6",
+    "timestamp": "2025-08-06",
+    "message": "VioletWing has been updated to version 1.2.6. This release includes various bug fixes and performance improvements."
   }
 ]
