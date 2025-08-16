@@ -19,5 +19,12 @@
     "url": "https://github.com/Jesewe/VioletWing/releases/tag/v1.2.7",
     "timestamp": "2025-08-06",
     "message": "VioletWing has been updated to version 1.2.7. This release includes various bug fixes and performance improvements."
+  },
+  {
+    "number": "4",
+    "title": "VioletWing Update 1.2.8 (ESP fix)",
+    "url": "https://github.com/Jesewe/VioletWing/releases/tag/v1.2.8",
+    "timestamp": "2025-08-16",
+    "message": "VioletWing has been updated to version 1.2.8. This release includes a fix for the ESP feature."
   }
 ]
