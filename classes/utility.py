@@ -38,7 +38,7 @@ class Utility:
 
             buttons_url = os.getenv(
                 'BUTTONS_URL',
-                'https://raw.githubusercontent.com/a2x/cs2-dumper/refs/heads/main/output/buttons.json'
+                'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json'
             )
             response_buttons = requests.get(buttons_url)
 
@@ -186,6 +186,7 @@ class Utility:
                 "m_iTeamNum": get_field("C_BaseEntity", "m_iTeamNum"),
                 "m_pGameSceneNode": get_field("C_BaseEntity", "m_pGameSceneNode"),
                 "m_vOldOrigin": get_field("C_BasePlayerPawn", "m_vOldOrigin"),
+                "m_vecAbsOrigin": get_field("CGameSceneNode", "m_vecAbsOrigin"),
                 "m_pWeaponServices": get_field("C_BasePlayerPawn", "m_pWeaponServices"),
                 "m_iIDEntIndex": get_field("C_CSPlayerPawnBase", "m_iIDEntIndex"),
                 "m_flFlashDuration": get_field("C_CSPlayerPawnBase", "m_flFlashDuration"),
@@ -197,7 +198,7 @@ class Utility:
                 "m_AttributeManager": get_field("C_EconEntity", "m_AttributeManager"),
                 "m_Item": get_field("C_AttributeContainer", "m_Item"),
                 "m_iItemDefinitionIndex": get_field("C_EconItemView", "m_iItemDefinitionIndex"),
-                "m_pBoneArray": 496
+                "m_pBoneArray": 528
             }
 
             missing_keys = [k for k, v in extracted_offsets.items() if v is None]
