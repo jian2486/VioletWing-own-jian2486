@@ -190,7 +190,7 @@ class Utility:
                 "m_pWeaponServices": get_field("C_BasePlayerPawn", "m_pWeaponServices"),
                 "m_iIDEntIndex": get_field("C_CSPlayerPawnBase", "m_iIDEntIndex"),
                 "m_flFlashDuration": get_field("C_CSPlayerPawnBase", "m_flFlashDuration"),
-                "m_pClippingWeapon": get_field("C_CSPlayerPawnBase", "m_pClippingWeapon"),
+                "m_pClippingWeapon": get_field("C_CSPlayerPawn", "m_pClippingWeapon"),
                 "m_hPlayerPawn": get_field("CCSPlayerController", "m_hPlayerPawn"),
                 "m_iszPlayerName": get_field("CBasePlayerController", "m_iszPlayerName"),
                 "m_hActiveWeapon": get_field("CPlayer_WeaponServices", "m_hActiveWeapon"),
