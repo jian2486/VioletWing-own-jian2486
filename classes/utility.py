@@ -188,7 +188,7 @@ class Utility:
                 "m_vOldOrigin": get_field("C_BasePlayerPawn", "m_vOldOrigin"),
                 "m_vecAbsOrigin": get_field("CGameSceneNode", "m_vecAbsOrigin"),
                 "m_pWeaponServices": get_field("C_BasePlayerPawn", "m_pWeaponServices"),
-                "m_iIDEntIndex": get_field("C_CSPlayerPawnBase", "m_iIDEntIndex"),
+                "m_iIDEntIndex": get_field("C_CSPlayerPawn", "m_iIDEntIndex"),
                 "m_flFlashDuration": get_field("C_CSPlayerPawnBase", "m_flFlashDuration"),
                 "m_pClippingWeapon": get_field("C_CSPlayerPawn", "m_pClippingWeapon"),
                 "m_hPlayerPawn": get_field("CCSPlayerController", "m_hPlayerPawn"),
