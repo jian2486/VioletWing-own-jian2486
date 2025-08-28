@@ -76,7 +76,17 @@ Install by cloning the repository or downloading a pre-built executable from rel
    pip install pyMeow*.zip
    ```
 
-3. **Run the Script:**
+3. **Compile the Project (Optional):**
+
+   To create a executable, run the provided `compile.bat` script:
+
+   ```bash
+   compile.bat
+   ```
+
+   This script uses PyInstaller to bundle the project into an executable file.
+
+4. **Run the Script:**
 
    ```bash
    python main.py
