@@ -27,27 +27,31 @@ VioletWing is an automated tool designed for Counter-Strike 2 that enhances game
   - Automatically fires when an enemy is under your crosshair.
   - Configurable trigger key (e.g., `x`, `c`, `mouse4`, `mouse5`) via GUI or `config.json`.
   - Toggle mode for single-key activation.
-  - Adjustable delays (`ShotDelayMin`, `ShotDelayMax`, `PostShotDelay`) for natural shooting.
+  - Adjustable delays (`ShotDelayMin`, `ShotDelayMax`, `PostShotDelay`) with weapon-specific settings for Pistols, Rifles, Snipers, SMGs, and Heavy weapons.
   - Option to attack teammates.
 - **Overlay (ESP)**:
-  - Displays enemy bounding boxes, snaplines, health numbers, nicknames, and a minimap.
-  - Customizable colors, line thickness, and minimap size.
+  - Displays enemy bounding boxes, skeletons, snaplines, health numbers, nicknames, and a minimap.
+  - Customizable colors, line thickness, minimap size, target FPS, and options like teammate drawing and name transliteration.
 - **Bunnyhop**:
   - Automates bunny hopping for continuous jumping and speed maintenance.
+  - Configurable jump key and delay.
 - **NoFlash**:
   - Reduces or eliminates flashbang effects for uninterrupted visibility.
+  - Adjustable flash suppression strength.
 - **Automatic Offset Fetching**: Retrieves latest offsets from remote sources on startup.
 - **Graphical User Interface (GUI)**:
   - **Dashboard**: Shows bot status, offset updates, and version info.
   - **General Settings**: Toggle TriggerBot, Overlay, Bunnyhop, and NoFlash.
-  - **Trigger Settings**: Configure trigger key, delays, and toggle mode.
-  - **Overlay Settings**: Adjust ESP features and appearance.
+  - **Trigger Settings**: Configure trigger key, delays, toggle mode, and weapon-specific options.
+  - **Overlay Settings**: Adjust ESP features, colors, and appearance.
+  - **Additional Settings**: Configure Bunnyhop (jump key, delay) and NoFlash (suppression strength).
   - **Logs Tab**: View real-time logs from `%LOCALAPPDATA%\Requests\ItsJesewe\crashes\vw_logs.log`.
   - **FAQ Tab**: Answers to common questions about all features.
+  - **Notifications Tab**: Displays update notifications and other alerts.
   - **Supporters Tab**: Lists contributors and supporters.
-- **Dynamic Config Updates**: Applies `config.json` changes without restarting via `file_watcher.py`.
-- **Update Checker**: Notifies of new versions via GitHub releases.
-- **Logging**: Saves logs to `%LOCALAPPDATA%\Requests\ItsJesewe\crashes\vw_logs.log` and `vw_detailed_logs.log`.
+- **Dynamic Config Updates**: Applies `config.json` changes without restarting via file watcher.
+- **Update Checker**: Notifies of new versions via GitHub releases, including stable and pre-releases.
+- **Logging**: Saves logs to `%LOCALAPPDATA%\Requests\ItsJesewe\crashes\vw_logs.log` and `vw_detailed_logs.log` with detailed error tracing.
 
 ## Installation
 
@@ -78,7 +82,7 @@ Install by cloning the repository or downloading a pre-built executable from rel
 
 3. **Compile the Project (Optional):**
 
-   To create a executable, run the provided `compile.bat` script:
+   To create an executable, run the provided `compile.bat` script:
 
    ```bash
    compile.bat
@@ -97,6 +101,13 @@ Install by cloning the repository or downloading a pre-built executable from rel
 Download the latest executable from the [Releases](https://github.com/Jesewe/VioletWing/releases) page and run it directly.
 
 **Note:** Requires Python >= 3.8 and < 3.12.5.
+
+## Usage
+
+1. Launch Counter-Strike 2.
+2. Run VioletWing (via Python or executable).
+3. Use the GUI to configure and toggle features.
+4. Changes to `config.json` are applied dynamically without restarting.
 
 ## Troubleshooting
 
