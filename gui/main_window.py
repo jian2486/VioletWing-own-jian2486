@@ -209,7 +209,7 @@ class MainWindow:
         social_frame.pack(side="right")
         
         # Load social media icons using CTkImage
-        icons = ['github', 'telegram']
+        icons = ['github', 'telegram', 'violetwing']
         for icon in icons:
             try:
                 image = Image.open(Utility.resource_path(f'src/img/{icon}_icon.png'))
@@ -220,6 +220,7 @@ class MainWindow:
         social_buttons = [
             ("GitHub", "github", "https://github.com/Jesewe/VioletWing", "#21262d", "#30363d", "#30363d"),
             ("Telegram", "telegram", "https://t.me/cs2_jesewe", "#0088cc", "#006bb3", None),
+            ("Help Center", "violetwing", "https://violetwing.featurebase.app/en/help", "#d5006d", "#97004e", None)
         ]
 
         for i, (text, icon, url, fg_color, hover_color, border_color) in enumerate(social_buttons):

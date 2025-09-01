@@ -31,22 +31,78 @@ def populate_faq(main_window, frame):
     
     # List of FAQ items
     faqs = [
-        ("What is a TriggerBot?", "A TriggerBot automatically shoots when your crosshair is positioned over an enemy player, providing enhanced reaction times in competitive gameplay. It works by detecting enemy pixels and triggering mouse clicks."),
-        ("What does the Overlay (ESP) feature do?", "The Overlay (ESP) feature displays visual information on the game screen, such as enemy bounding boxes, snaplines, health numbers, nicknames, and a minimap, helping you track opponents and teammates effectively."),
-        ("What is the Bunnyhop feature?", "The Bunnyhop feature automates the process of bunny hopping in Counter-Strike 2, allowing continuous jumping to maintain speed and improve movement control without manual input."),
-        ("What is the NoFlash feature?", "The NoFlash feature reduces or eliminates the effect of flashbangs in Counter-Strike 2, ensuring you maintain visibility and can continue playing effectively even when flashed."),
-        ("Is this tool safe to use?", "This tool is for educational purposes only. Using automation tools in online games violates terms of service and may result in bans. Use at your own risk."),
-        ("How do I configure the trigger key?", "Navigate to the Trigger Settings tab and enter your preferred key in the Trigger Key field. You can use keyboard keys (e.g., 'x', 'c', 'v') or mouse buttons (e.g., 'mouse4' for mouse button 4, 'mouse5' for mouse button 5)."),
-        ("What are the delay settings for?", "Delay settings in the Trigger Settings tab give the TriggerBot a more natural feel by adding timing differences. You can set minimum and maximum delays to randomize how quickly it shoots, and the Post Shot Delay adds a pause after each shot to mimic human reaction times."),
-        ("How do I customize the Overlay (ESP) settings?", "In the Overlay Settings tab, you can enable or disable features like bounding boxes, snaplines, health numbers, nicknames, and the minimap. You can also adjust colors, line thickness, and minimap size to suit your preferences."),
-        ("Can I use these features on FACEIT or ESEA?", "No, automation tools like TriggerBot, Overlay, Bunnyhop, or NoFlash are not allowed on anti-cheat platforms like FACEIT, ESEA, or VAC-secured servers. Using them will likely result in a permanent ban. Stick to casual servers or offline practice."),
-        ("How do I update the offsets?", "The app automatically fetches the latest offsets from the server on startup. You can check the last update time on the Dashboard."),
-        ("Why isn't the TriggerBot triggering?", "Common issues include: incorrect trigger key configuration, the game window not being focused, the crosshair not being on an enemy, or changed game settings. Verify your settings in the Trigger Settings tab."),
-        ("Why isn't the Overlay (ESP) displaying?", "Ensure the Overlay feature is enabled in General Settings and that the game is running. Check the Overlay Settings tab to confirm visibility options (e.g., bounding boxes, snaplines) are enabled. Also, verify that your game is in a compatible mode (e.g., windowed or borderless)."),
-        ("Why doesn't Bunnyhop work consistently?", "Bunnyhop may fail if the game window is not focused, the Bunnyhop feature is disabled in General Settings, or your timing settings interfere. Check the General Settings tab and ensure consistent key inputs."),
-        ("Why is NoFlash not working?", "Ensure NoFlash is enabled in General Settings. It may not work if the game’s anti-cheat detects memory modifications or if the offsets are outdated. Restart the app to refresh offsets and verify game compatibility."),
-        ("What should I do if the app crashes?", "Try restarting the app, ensuring you have the latest version, and checking system requirements. Verify that no antivirus is blocking the app. Check the Logs tab for error details."),
-        ("Is there a hotkey to toggle features on/off?", "Yes, you can set a toggle hotkey for the TriggerBot in the Trigger Settings tab. Other features like Overlay, Bunnyhop, and NoFlash can be toggled via General Settings, but they don’t have individual hotkeys.")
+        (
+            "What is a TriggerBot?",
+            "The TriggerBot automatically fires when your crosshair is over an enemy in Counter-Strike 2, enhancing reaction times in competitive play. It uses memory reads to detect enemies and simulates mouse clicks with configurable delays for a natural feel. You can set the trigger key (e.g., 'x', 'mouse4'), enable toggle mode, and adjust weapon-specific delays (Pistols, Rifles, etc.) in the Trigger Settings tab or config.json. For details, see the 'TriggerBot Overview' article in the Features collection."
+        ),
+        (
+            "What does the Overlay (ESP) feature do?",
+            "The Overlay (ESP) displays real-time visual aids on the game screen, including bounding boxes around enemies, skeletons, snaplines to targets, health numbers, nicknames, and a minimap. It helps track opponents and teammates (if enabled) effectively. Customize colors, line thickness, and minimap size in the Overlay Settings tab. For example, set 'snaplines_color_hex' to '#FFFFFF' in config.json for white lines. See the 'Overlay (ESP) Details' article for more."
+        ),
+        (
+            "What is the Bunnyhop feature?",
+            "The Bunnyhop feature automates continuous jumping in Counter-Strike 2 to maintain speed and improve movement control. It monitors the jump key (default: 'space') and writes to memory to force jumps with a configurable delay (e.g., 0.01 seconds). Adjust settings in the Additional Settings tab or config.json. Ensure the game window is focused for consistent performance. Check the 'Bunnyhop Automation' article for tips."
+        ),
+        (
+            "What is the NoFlash feature?",
+            "The NoFlash feature reduces or eliminates flashbang effects in Counter-Strike 2 by modifying the flash duration in memory. Set the suppression strength (0.0 for full removal, up to 1.0) in the Additional Settings tab or config.json. This ensures uninterrupted visibility during gameplay. For setup details, see the 'NoFlash Effect Reduction' article."
+        ),
+        (
+            "Is this tool safe to use?",
+            "VioletWing is for educational purposes only. Using automation tools in online games like Counter-Strike 2 violates terms of service and risks account bans, especially on VAC-secured servers, FACEIT, or ESEA. Use it in offline modes or private servers to avoid detection. Always review the 'Usage Disclaimer' in the Legal and Disclaimer collection before proceeding."
+        ),
+        (
+            "How do I configure the trigger key?",
+            "In the Trigger Settings tab, select or type a trigger key (e.g., 'x', 'c', 'mouse4', 'mouse5'). Alternatively, edit 'TriggerKey' in config.json (e.g., '\"TriggerKey\": \"x\"'). Supported keys include keyboard letters and mouse buttons (see 'get_vk_code' in utility.py for a full list). Test in a private match to ensure it triggers correctly. Refer to the 'TriggerBot Overview' article for advanced settings."
+        ),
+        (
+            "What are the delay settings for?",
+            "Delay settings in the Trigger Settings tab make TriggerBot shots feel human-like by randomizing timing. 'ShotDelayMin' and 'ShotDelayMax' set the range for initial shot delay (e.g., 0.01-0.03s for Rifles), while 'PostShotDelay' adds a pause after firing (e.g., 0.02s). Adjust per weapon type in the GUI or config.json (e.g., '\"Rifles\": {\"ShotDelayMin\": 0.01, \"ShotDelayMax\": 0.03, \"PostShotDelay\": 0.02}'). See 'Advanced Configuration' for examples."
+        ),
+        (
+            "How do I customize the Overlay (ESP) settings?",
+            "In the Overlay Settings tab, toggle features like bounding boxes, skeletons, snaplines, health numbers, nicknames, and the minimap. Adjust colors via hex codes (e.g., '#FFA500' for orange), line thickness, minimap size, and target FPS (default: 60). In config.json, modify the 'Overlay' section (e.g., '\"enable_box\": true, \"snaplines_color_hex\": \"#FFFFFF\"'). Lower FPS for better performance on low-end systems. See 'Overlay (ESP) Details' for a full guide."
+        ),
+        (
+            "Can I use these features on FACEIT or ESEA?",
+            "No, using VioletWing on anti-cheat platforms like FACEIT, ESEA, or VAC-secured servers is prohibited and will likely result in a permanent ban. Features like TriggerBot, Overlay, Bunnyhop, and NoFlash are detected by anti-cheat systems. Use only in offline modes, private servers, or casual matches. For safety, read the 'Usage Disclaimer' in the Legal and Disclaimer collection."
+        ),
+        (
+            "How do I update the offsets?",
+            "VioletWing automatically fetches offsets from https://github.com/a2x/cs2-dumper on startup, ensuring compatibility with Counter-Strike 2 updates. Check the last update time on the Dashboard tab. If fetching fails, manually download offsets.json, client_dll.json, and buttons.json from the cs2-dumper repository and update the URLs in utility.py. For troubleshooting, see 'Offset Fetching and Management' in the Features collection."
+        ),
+        (
+            "Why isn't the TriggerBot triggering?",
+            "If TriggerBot doesn't fire, check: 1) Trigger key is correctly set in Trigger Settings (e.g., 'x' or 'mouse4'). 2) Game window is focused. 3) Crosshair is on a valid enemy (health > 0, not teammate unless enabled). 4) Offsets are up-to-date (check Dashboard). 5) Toggle mode is active if set. Review logs in the Logs tab for errors like 'Failed to get fire logic data.' See 'Failed to Fetch Offsets' or 'Offset Errors After Game Update' in Troubleshooting."
+        ),
+        (
+            "Why isn't the Overlay (ESP) displaying?",
+            "If the Overlay isn't visible, ensure: 1) Overlay is enabled in General Settings. 2) Counter-Strike 2 is running in windowed or borderless mode (fullscreen may cause issues; see below). 3) Features like boxes or snaplines are enabled in Overlay Settings. 4) PyMeow is installed correctly (check Installation Guide). 5) Offsets are current. Check logs for errors like 'Overlay initialization error.' For details, see 'Overlay Not Displaying' in Troubleshooting."
+        ),
+        (
+            "Why doesn't Bunnyhop work consistently?",
+            "Inconsistent Bunnyhop may occur if: 1) Game window isn't focused (click the CS2 window). 2) Bunnyhop is disabled in General Settings. 3) Jump delay is too low/high (default: 0.01s; adjust in Additional Settings). 4) Server anti-cheat or tick rate limits jumping. Test in a private match and check logs for 'Error performing jump.' See 'Bunnyhop Inconsistencies' in Troubleshooting for solutions."
+        ),
+        (
+            "Why is NoFlash not working?",
+            "If NoFlash fails: 1) Ensure it's enabled in General Settings. 2) Verify offsets are updated (check Dashboard). 3) Adjust FlashSuppressionStrength (0.0 for full removal) in Additional Settings or config.json. 4) Check for anti-cheat interference. Look for 'Error disabling flash' in logs. Restart VioletWing to refresh offsets. See 'NoFlash Not Effective' in Troubleshooting."
+        ),
+        (
+            "What should I do if the app crashes?",
+            r"If VioletWing crashes: 1) Restart the app and ensure Counter-Strike 2 is running. 2) Check for updates (stable or pre-release) in the Notifications tab or https://github.com/Jesewe/VioletWing/releases. 3) Verify Python version (3.8 to <3.12.5) and dependencies (see Installation Guide). 4) Disable antivirus temporarily. 5) Review logs in %LOCALAPPDATA%\Requests\ItsJesewe\crashes\vw_logs.log for errors. See 'General Unexpected Errors' in Troubleshooting."
+        ),
+        (
+            "Is there a hotkey to toggle features on/off?",
+            "TriggerBot supports a toggle hotkey (set in Trigger Settings, e.g., 'x' or 'mouse4') with sound feedback (1000Hz for on, 500Hz for off). Other features (Overlay, Bunnyhop, NoFlash) are toggled via the General Settings tab in the GUI. To change configs quickly, edit config.json (dynamic updates apply instantly). See 'Dynamic Configuration Updates' and 'TriggerBot Overview' for more."
+        ),
+        (
+            "Why doesn't VioletWing work properly in fullscreen mode?",
+            r"Fullscreen mode may cause issues like a black background for the Overlay (ESP) due to rendering conflicts with PyMeow or graphics card settings. To fix: 1) Switch Counter-Strike 2 to windowed or borderless mode in game settings. 2) Ensure PyMeow is installed correctly (see Installation Guide). 3) Test with onboard graphics if using a dedicated GPU. 4) Check for client updates (stable or pre-release) at https://github.com/Jesewe/VioletWing/releases. For details, see 'Overlay Not Displaying' in Troubleshooting."
+        ),
+        (
+            "What should I do if I encounter an error?",
+            r"For any error: 1) Check the Logs tab or %LOCALAPPDATA%\Requests\ItsJesewe\crashes\vw_logs.log for details (e.g., 'Failed to read memory' or 'Offset error'). 2) Ensure you have the latest VioletWing client (check stable and pre-release versions at https://github.com/Jesewe/VioletWing/releases). 3) Verify offsets are updated (Dashboard). 4) Restart VioletWing and CS2. 5) Disable antivirus if blocking. See 'General Unexpected Errors' or specific Troubleshooting articles for your error."
+        )
     ]
     
     # Create FAQ cards
@@ -130,7 +186,7 @@ def populate_faq(main_window, frame):
     # Footer guidance text
     ctk.CTkLabel(
         footer_frame,
-        text="If you couldn't find the answer you're looking for, here are some additional resources:",
+        text="Explore these resources for more help or to contribute to VioletWing:",
         font=("Gambetta", 14),
         text_color=("#6b7280", "#9ca3af")
     ).pack(pady=(0, 15))
@@ -156,6 +212,40 @@ def populate_faq(main_window, frame):
     )
     github_issues_btn.pack(side="left", padx=(0, 10))
 
+    # GitHub Releases link
+    def open_github_releases():
+        import webbrowser
+        webbrowser.open("https://github.com/Jesewe/VioletWing/releases")
+    
+    github_releases_btn = ctk.CTkButton(
+        links_container,
+        text="📦 Check Updates",
+        command=open_github_releases,
+        font=("Chivo", 13, "bold"),
+        fg_color=("#3b82f6", "#2563eb"),
+        hover_color=("#2563eb", "#1d4ed8"),
+        width=140,
+        height=32
+    )
+    github_releases_btn.pack(side="left", padx=(0, 10))
+
+    # Help Center link
+    def open_help_center():
+        import webbrowser
+        webbrowser.open("https://violetwing.featurebase.app/en/help")
+    
+    help_center_btn = ctk.CTkButton(
+        links_container,
+        text="📚 Help Center",
+        command=open_help_center,
+        font=("Chivo", 13, "bold"),
+        fg_color=("#10b981", "#059669"),
+        hover_color=("#059669", "#047857"),
+        width=140,
+        height=32
+    )
+    help_center_btn.pack(side="left", padx=(0, 10))
+    
     # Additional footer text
     ctk.CTkLabel(
         footer_frame,

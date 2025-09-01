@@ -3,10 +3,12 @@ import threading
 import orjson
 import requests
 import time
+from datetime import datetime
 from pathlib import Path
 from classes.logger import Logger
 from classes.utility import Utility
 from classes.config_manager import ConfigManager
+from dateutil.parser import parse as parse_date
 
 # Cache the logger instance
 logger = Logger.get_logger()
@@ -42,9 +44,15 @@ def populate_dashboard(main_window, frame):
     )
     subtitle_label.pack(side="left", padx=(20, 0), pady=(10, 0))
     
-    # Frame for status cards
+    # Frame for status cards - using grid layout for better responsiveness
     stats_frame = ctk.CTkFrame(dashboard, fg_color="transparent")
     stats_frame.pack(fill="x", pady=(0, 40))
+    
+    # Configure grid columns to be equal width
+    stats_frame.grid_columnconfigure(0, weight=1)
+    stats_frame.grid_columnconfigure(1, weight=1)
+    stats_frame.grid_columnconfigure(2, weight=1)
+    stats_frame.grid_columnconfigure(3, weight=1)
     
     # Bot status card with stored label reference
     status_card, main_window.bot_status_label = create_stat_card(
@@ -55,8 +63,19 @@ def populate_dashboard(main_window, frame):
         "#ef4444",
         "Current operational state"
     )
-    status_card.pack(side="left", fill="x", expand=True, padx=(0, 20))
+    status_card.grid(row=0, column=0, sticky="ew", padx=(0, 5))
     
+    # CS2 latest patch card
+    cs2_patch_card, main_window.cs2_patch_label = create_stat_card(
+        main_window,
+        stats_frame,
+        "🔔 CS2 Update",
+        "Checking...",
+        "#6b7280",
+        "Latest Counter-Strike 2 patch"
+    )
+    cs2_patch_card.grid(row=0, column=1, sticky="ew", padx=(5, 5))
+
     # Last update card with stored label reference
     update_card, main_window.update_value_label = create_stat_card(
         main_window,
@@ -66,8 +85,8 @@ def populate_dashboard(main_window, frame):
         "#6b7280",
         "Last offsets synchronization"
     )
-    update_card.pack(side="left", fill="x", expand=True, padx=(10, 10))
-    
+    update_card.grid(row=0, column=2, sticky="ew", padx=(5, 5))
+
     # Version card
     version_card, version_value_label = create_stat_card(
         main_window,
@@ -77,7 +96,7 @@ def populate_dashboard(main_window, frame):
         "#D5006D",
         "Current application version"
     )
-    version_card.pack(side="left", fill="x", expand=True, padx=(20, 0))
+    version_card.grid(row=0, column=3, sticky="ew", padx=(5, 0))
     
     # Control panel section
     control_panel = ctk.CTkFrame(
@@ -170,9 +189,10 @@ def populate_dashboard(main_window, frame):
     # List of guide steps
     steps = [
         ("1", "Launch CS2", "Open Counter-Strike 2 and ensure it's running"),
-        ("2", "Configure Settings", "Set your trigger settings or overlay settings"),
-        ("3", "Start Client", "Click the Start Client button to activate"),
-        ("4", "Monitor Logs", "Check the Logs tab for activity and status updates")
+        ("2", "Configure Features", "Enable TriggerBot, Overlay (ESP), Bunnyhop, or NoFlash"),
+        ("3", "Adjust Settings", "Customize trigger keys, delays, colors, and other preferences"),
+        ("4", "Start VioletWing", "Click the Start Client button to activate your assistant"),
+        ("5", "Monitor Status", "Check Dashboard status and Logs tab for real-time updates")
     ]
     
     # Create each step
@@ -232,8 +252,9 @@ def populate_dashboard(main_window, frame):
             )
             connector.pack(padx=(65, 0), anchor="w")
     
-    # Fetch last update timestamp
+    # Fetch last offset update and CS2 patch
     fetch_last_update(main_window)
+    fetch_cs2_latest_patch(main_window)
 
 def create_stat_card(main_window, parent, title, value, color, subtitle):
     """Create a modern stat card and return the card and value label."""
@@ -248,32 +269,32 @@ def create_stat_card(main_window, parent, title, value, color, subtitle):
     
     # Content frame within card
     content = ctk.CTkFrame(card, fg_color="transparent")
-    content.pack(fill="both", expand=True, padx=30, pady=30)
+    content.pack(fill="both", expand=True, padx=20, pady=25)
     
     # Card header
     ctk.CTkLabel(
         content,
         text=title,
-        font=("Chivo", 16, "bold"),
+        font=("Chivo", 14, "bold"),
         text_color=("#64748b", "#94a3b8"),
         anchor="w"
-    ).pack(fill="x", pady=(0, 12))
+    ).pack(fill="x", pady=(0, 10))
     
     # Value label with dynamic color
     value_label = ctk.CTkLabel(
         content,
         text=value,
-        font=("Chivo", 28, "bold"),
+        font=("Chivo", 24, "bold"),
         text_color=color,
         anchor="w"
     )
-    value_label.pack(fill="x", pady=(0, 8))
+    value_label.pack(fill="x", pady=(0, 6))
     
     # Subtitle providing context
     ctk.CTkLabel(
         content,
         text=subtitle,
-        font=("Gambetta", 13),
+        font=("Gambetta", 11),
         text_color=("#94a3b8", "#64748b"),
         anchor="w"
     ).pack(fill="x")
@@ -343,7 +364,6 @@ def fetch_last_update(main_window):
                 commit_timestamp = commit_data["commit"]["committer"]["date"]
 
                 # Parse and format the timestamp
-                from dateutil.parser import parse as parse_date
                 last_update_dt = parse_date(commit_timestamp)
                 formatted_timestamp = last_update_dt.strftime("%m/%d/%Y %H:%M")
 
@@ -379,6 +399,97 @@ def fetch_last_update(main_window):
 
     # Run fetch in a separate thread
     threading.Thread(target=update_callback, daemon=True).start()
+
+def fetch_cs2_latest_patch(main_window):
+    """Fetch and display the latest Counter-Strike 2 patch date from Steam Web API."""
+    def patch_callback():
+        max_retries = 3
+        retry_delay = 5  # seconds
+        cache_file = Path(ConfigManager.CONFIG_DIRECTORY) / "cs2_patch_cache.txt"
+
+        def load_cached_patch():
+            try:
+                with open(cache_file, 'r') as f:
+                    return f.read().strip()
+            except FileNotFoundError:
+                return None
+
+        def save_cached_patch(patch_date):
+            try:
+                with open(cache_file, 'w') as f:
+                    f.write(patch_date)
+            except IOError as e:
+                logger.error("Failed to save cached patch date: %s", e)
+
+        def update_ui(text, color):
+            # Schedule UI update in the main thread
+            try:
+                main_window.root.after(0, lambda: (
+                    main_window.cs2_patch_label.configure(text=text, text_color=color)
+                    if main_window.root.winfo_exists() and hasattr(main_window, 'cs2_patch_label')
+                    else None
+                ))
+            except Exception as e:
+                pass
+
+        # Try loading cached patch date first
+        cached_patch = load_cached_patch()
+        if cached_patch:
+            logger.info("Using cached CS2 patch date: %s", cached_patch)
+            update_ui(cached_patch, "#22c55e")
+
+        # Headers for Steam API request (minimal, as it's public)
+        headers = {
+            "User-Agent": "VioletWing-App"
+        }
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(
+                    "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=730&count=1&maxlength=1&format=json",
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                
+                # Parse JSON response
+                data = orjson.loads(response.content)
+                
+                if 'appnews' in data and 'newsitems' in data['appnews'] and data['appnews']['newsitems']:
+                    news_item = data['appnews']['newsitems'][0]
+                    timestamp = news_item['date']
+                    
+                    # Convert Unix timestamp to datetime
+                    patch_date = datetime.fromtimestamp(timestamp)
+                    formatted_date = patch_date.strftime("%m/%d/%Y")
+
+                    # Cache the patch date
+                    save_cached_patch(formatted_date)
+
+                    # Update UI
+                    update_ui(formatted_date, "#22c55e")
+                    logger.info("Successfully fetched CS2 patch date: %s", formatted_date)
+                    return
+                else:
+                    raise ValueError("No news items found in Steam API response")
+
+            except requests.exceptions.HTTPError as e:
+                logger.error("HTTP error fetching CS2 patch: %s", e)
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                update_ui("Error", "#ef4444")
+                return
+            except Exception as e:
+                logger.error("Failed to fetch CS2 patch: %s", e)
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                update_ui("Error", "#ef4444")
+                return
+
+    # Run fetch in a separate thread
+    threading.Thread(target=patch_callback, daemon=True).start()
 
 def update_client_status(self, status, color):
     """Update the client status indicators across the dashboard."""
