@@ -561,6 +561,7 @@ del "%~f0" 2>nul
         """Helper method to start a single feature."""
         if not getattr(feature_obj, 'is_running', False):
             try:
+                # Ensure the feature object has the latest config
                 feature_obj.config = config
                 feature_obj.is_running = True
                 thread = threading.Thread(target=feature_obj.start, daemon=True)
@@ -569,6 +570,8 @@ del "%~f0" 2>nul
                 logger.info(f"{feature_name} started.")
                 return True
             except Exception as e:
+                # Reset running state on failure
+                feature_obj.is_running = False
                 logger.error(f"Failed to start {feature_name}: {e}")
                 messagebox.showerror(f"{feature_name} Error", f"Failed to start {feature_name}: {str(e)}")
         return False
@@ -591,6 +594,8 @@ del "%~f0" 2>nul
                 return True
             except Exception as e:
                 logger.error(f"Failed to stop {feature_name}: {e}", exc_info=True)
+                # Force reset the running state even if stop failed
+                feature_obj.is_running = False
         return False
 
     def start_client(self):
@@ -618,7 +623,12 @@ del "%~f0" 2>nul
         # Start features based on General settings
         for feature_name, config_key, feature_obj in features:
             if config["General"][config_key]:
-                if self._start_feature(feature_name, feature_obj, config):
+                # Check if feature is not already running
+                if not getattr(feature_obj, 'is_running', False):
+                    if self._start_feature(feature_name, feature_obj, config):
+                        any_feature_started = True
+                else:
+                    logger.info(f"{feature_name} is already running.")
                     any_feature_started = True
 
         if any_feature_started:
@@ -689,10 +699,18 @@ del "%~f0" 2>nul
                 new_enabled = new_config["General"].get(feature_key, False)
                 is_running = getattr(feature_obj, 'is_running', False)
 
-                # Handle state changes
+                # Handle state changes only if game is running
                 if old_enabled != new_enabled:
                     if new_enabled and not is_running:
-                        self._start_feature(feature_name, feature_obj, new_config)
+                        # Only try to start if game is running
+                        if Utility.is_game_running():
+                            # Initialize memory manager if not already done
+                            if not self.memory_manager.initialize():
+                                logger.error(f"Failed to initialize memory manager for {feature_name}")
+                                continue
+                            self._start_feature(feature_name, feature_obj, new_config)
+                        else:
+                            logger.warning(f"Cannot start {feature_name}: Game is not running")
                     elif not new_enabled and is_running:
                         self._stop_feature(feature_name, feature_obj)
                 

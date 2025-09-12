@@ -437,10 +437,6 @@ class CS2Overlay:
                 sleep_time = frame_time - elapsed_time
                 if sleep_time > 0:
                     sleep(sleep_time)
-
-            except KeyboardInterrupt:
-                logger.debug("Overlay stopped by user.")
-                self.stop()
             except Exception as e:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
                 sleep(MAIN_LOOP_SLEEP)

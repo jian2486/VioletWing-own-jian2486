@@ -95,9 +95,6 @@ class CS2Bunnyhop:
                         last_jump_time = current_time
 
                 sleep(MAIN_LOOP_SLEEP)
-            except KeyboardInterrupt:
-                logger.debug("Bunnyhop stopped by user.")
-                self.stop()
             except Exception as e:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
                 sleep(MAIN_LOOP_SLEEP)

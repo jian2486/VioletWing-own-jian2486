@@ -1,4 +1,8 @@
 import customtkinter as ctk
+import os
+from pathlib import Path
+from tkinter import filedialog
+from classes.config_manager import ConfigManager
 
 def populate_general_settings(main_window, frame):
     """
@@ -38,6 +42,8 @@ def populate_general_settings(main_window, frame):
 
     # Create section for general feature settings
     create_features_section(main_window, settings)
+    # Create section for offset configuration
+    create_offsets_section(main_window, settings)
     create_reset_section(main_window, settings)
 
 def create_reset_section(main_window, parent):
@@ -158,6 +164,150 @@ def create_features_section(main_window, parent):
             main_window,
             is_last=(i == len(settings_list) - 1)
         )
+
+def create_offsets_section(main_window, parent):
+    """Create section for configuring offset source and local file selection."""
+    # Section frame with modern styling
+    section = ctk.CTkFrame(
+        parent,
+        corner_radius=20,
+        fg_color=("#ffffff", "#1a1b23"),
+        border_width=2,
+        border_color=("#e2e8f0", "#2d3748")
+    )
+    section.pack(fill="x", pady=(0, 30))
+
+    # Header frame for section title and description
+    header = ctk.CTkFrame(section, fg_color="transparent")
+    header.pack(fill="x", padx=40, pady=(40, 30))
+
+    # Section title with icon
+    ctk.CTkLabel(
+        header,
+        text="📡  Offsets Configuration",
+        font=("Chivo", 24, "bold"),
+        text_color=("#1f2937", "#ffffff"),
+        anchor="w"
+    ).pack(side="left")
+
+    # Description of section purpose
+    ctk.CTkLabel(
+        header,
+        text="Configure offset source and local files",
+        font=("Gambetta", 14),
+        text_color=("#64748b", "#94a3b8"),
+        anchor="e"
+    ).pack(side="right")
+
+    # Offset source dropdown
+    main_window.offset_source_var = ctk.StringVar(value=main_window.triggerbot.config["General"].get("OffsetSource", "server").capitalize())
+    offset_dropdown = ctk.CTkOptionMenu(
+        header,
+        variable=main_window.offset_source_var,
+        values=["Server", "Local"],
+        command=lambda e: update_offset_source(main_window, e),
+        font=("Chivo", 14),
+        dropdown_font=("Chivo", 14),
+        corner_radius=12,
+        fg_color=("#D5006D", "#E91E63"),
+        button_color=("#B8004A", "#C2185B"),
+        button_hover_color=("#9F003D", "#A6144E")
+    )
+    offset_dropdown.pack(side="right", padx=(0, 10))
+
+    # Frame for local file selection (hidden by default)
+    main_window.local_files_frame = ctk.CTkFrame(section, fg_color="transparent")
+    if main_window.offset_source_var.get() == "Local":
+        main_window.local_files_frame.pack(fill="x", padx=40, pady=(0, 40))
+
+    # List of files for selection
+    files = [
+        ("Offsets File", "offsets.json", "Select offsets.json file"),
+        ("Client DLL File", "client_dll.json", "Select client_dll.json file"),
+        ("Buttons File", "buttons.json", "Select buttons.json file")
+    ]
+
+    # Store file paths in main_window
+    main_window.local_file_paths = {}
+    for label_text, filename, description in files:
+        create_file_selector(main_window, main_window.local_files_frame, label_text, filename, description)
+
+def create_file_selector(main_window, parent, label_text, filename, description):
+    """Create a file selector for a specific offset file."""
+    item_frame = ctk.CTkFrame(parent, fg_color="transparent")
+    item_frame.pack(fill="x", padx=0, pady=(0, 10))
+    
+    container = ctk.CTkFrame(
+        item_frame,
+        corner_radius=12,
+        fg_color=("#f8fafc", "#252830"),
+        border_width=1,
+        border_color=("#e2e8f0", "#374151")
+    )
+    container.pack(fill="x")
+
+    content_frame = ctk.CTkFrame(container, fg_color="transparent")
+    content_frame.pack(fill="x", padx=25, pady=15)
+
+    label_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+    label_frame.pack(side="left", fill="x", expand=True)
+
+    ctk.CTkLabel(
+        label_frame,
+        text=label_text,
+        font=("Chivo", 16, "bold"),
+        text_color=("#1f2937", "#ffffff"),
+        anchor="w"
+    ).pack(fill="x", pady=(0, 4))
+
+    ctk.CTkLabel(
+        label_frame,
+        text=description,
+        font=("Gambetta", 13),
+        text_color=("#64748b", "#94a3b8"),
+        anchor="w",
+        wraplength=400
+    ).pack(fill="x")
+
+    button_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+    button_frame.pack(side="right", padx=(30, 0))
+
+    def select_file():
+        file_path = filedialog.askopenfilename(
+            filetypes=[("JSON files", "*.json")],
+            initialdir=Path(ConfigManager.CONFIG_DIRECTORY)
+        )
+        if file_path:
+            main_window.local_file_paths[filename] = file_path
+            file_button.configure(text=f"Selected: {os.path.basename(file_path)}")
+            # Update config with selected file path
+            config_key = {
+                "offsets.json": "OffsetsFile",
+                "client_dll.json": "ClientDLLFile",
+                "buttons.json": "ButtonsFile"
+            }[filename]
+            main_window.triggerbot.config["General"][config_key] = file_path
+            main_window.save_settings(show_message=False)
+
+    file_button = ctk.CTkButton(
+        button_frame,
+        text=f"Select {filename}",
+        font=("Chivo", 14),
+        corner_radius=10,
+        fg_color=("#D5006D", "#E91E63"),
+        hover_color=("#9F003D", "#A6144E"),
+        command=select_file
+    )
+    file_button.pack()
+
+def update_offset_source(main_window, selected):
+    """Update offset source and show/hide file selection frame."""
+    main_window.triggerbot.config["General"]["OffsetSource"] = selected.lower()
+    main_window.save_settings(show_message=False)
+    if selected == "Local":
+        main_window.local_files_frame.pack(fill="x", padx=40, pady=(0, 40))
+    else:
+        main_window.local_files_frame.pack_forget()
 
 def create_setting_item(parent, label_text, description, widget_type, key, main_window, is_last=False):
     item_frame = ctk.CTkFrame(parent, fg_color="transparent")

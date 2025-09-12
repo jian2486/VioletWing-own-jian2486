@@ -76,9 +76,6 @@ class CS2NoFlash:
 
                 self.disable_flash()
                 sleep(NOFLASH_LOOP_SLEEP)
-            except KeyboardInterrupt:
-                logger.debug("NoFlash stopped by user.")
-                self.stop()
             except Exception as e:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
                 sleep(NOFLASH_LOOP_SLEEP)
@@ -87,5 +84,4 @@ class CS2NoFlash:
         """Stop the NoFlash and clean up resources."""
         self.is_running = False
         self.stop_event.set()
-        
         logger.debug("NoFlash stopped.")

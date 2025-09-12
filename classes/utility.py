@@ -7,6 +7,7 @@ import pygetwindow as gw
 import orjson
 from packaging import version
 from dateutil.parser import parse as parse_date
+from pathlib import Path
 
 from classes.config_manager import COLOR_CHOICES
 from classes.logger import Logger
@@ -22,7 +23,57 @@ class Utility:
         - Retrieves data from 'offsets.json' and 'client_dll.json' on GitHub.
         - Logs an error if either request fails or the server returns a non-200 status code.
         - Handles exceptions gracefully, ensuring no unhandled errors crash the application.
+        - Supports loading from local files if configured.
         """
+        from classes.config_manager import ConfigManager
+        config = ConfigManager.load_config()
+        source = config["General"].get("OffsetSource", "server")
+        
+        if source == "local":
+            config_dir = Path(ConfigManager.CONFIG_DIRECTORY)
+            offsets_file = config.get("General", {}).get("OffsetsFile", config_dir / "offsets.json")
+            client_file = config.get("General", {}).get("ClientDLLFile", config_dir / "client_dll.json")
+            buttons_file = config.get("General", {}).get("ButtonsFile", config_dir / "buttons.json")
+            
+            try:
+                if not all(f.exists() for f in [Path(offsets_file), Path(client_file), Path(buttons_file)]):
+                    missing = [f.name for f in [Path(offsets_file), Path(client_file), Path(buttons_file)] if not f.exists()]
+                    logger.error(f"Local offset files missing: {', '.join(missing)}. Falling back to server.")
+                    config["General"]["OffsetSource"] = "server"
+                    ConfigManager.save_config(config)
+                    return Utility.fetch_offsets()  # Recursive fallback to server
+                
+                offset_bytes = Path(offsets_file).read_bytes()
+                client_bytes = Path(client_file).read_bytes()
+                buttons_bytes = Path(buttons_file).read_bytes()
+                
+                offset = orjson.loads(offset_bytes)
+                client = orjson.loads(client_bytes)
+                buttons = orjson.loads(buttons_bytes)
+                
+                # Validate by attempting to extract offsets
+                extracted = Utility.extract_offsets(offset, client, buttons)
+                if extracted is None:
+                    logger.error("Local offset files invalid: Missing required offsets. Falling back to server.")
+                    config["General"]["OffsetSource"] = "server"
+                    ConfigManager.save_config(config)
+                    return Utility.fetch_offsets()  # Recursive fallback to server
+                
+                logger.info("Loaded and validated local offsets.")
+                return offset, client, buttons
+                
+            except (orjson.JSONDecodeError, IOError) as e:
+                logger.error(f"Failed to load local offset files: {e}. Falling back to server.")
+                config["General"]["OffsetSource"] = "server"
+                ConfigManager.save_config(config)
+                return Utility.fetch_offsets()  # Recursive fallback to server
+            except Exception as e:
+                logger.exception(f"Unexpected error loading local offsets: {e}. Falling back to server.")
+                config["General"]["OffsetSource"] = "server"
+                ConfigManager.save_config(config)
+                return Utility.fetch_offsets()  # Recursive fallback to server
+        
+        # Default server fetch
         try:
             offsets_url = os.getenv(
                 'OFFSETS_URL',
@@ -44,31 +95,39 @@ class Utility:
 
             if response_offset.status_code != 200:
                 logger.error("Failed to fetch offsets: offsets.json request failed.")
-                return None, None
+                return None, None, None
 
             if response_client.status_code != 200:
                 logger.error("Failed to fetch offsets: client_dll.json request failed.")
-                return None, None
+                return None, None, None
             
             if response_buttons.status_code != 200:
                 logger.error("Failed to fetch buttons: buttons.json request failed.")
-                return None, None
+                return None, None, None
 
             try:
                 offset = orjson.loads(response_offset.content)
                 client = orjson.loads(response_client.content)
                 buttons = orjson.loads(response_buttons.content)
+                
+                # Validate by attempting to extract offsets
+                extracted = Utility.extract_offsets(offset, client, buttons)
+                if extracted is None:
+                    logger.error("Server offset files invalid: Missing required offsets.")
+                    return None, None, None
+                
+                logger.info("Loaded and validated server offsets.")
                 return offset, client, buttons
             except orjson.JSONDecodeError as e:
                 logger.error(f"Failed to decode JSON response: {e}")
-                return None, None
+                return None, None, None
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Request failed: {e}")
-            return None, None
+            return None, None, None
         except Exception as e:
             logger.exception(f"An unexpected error occurred: {e}")
-            return None, None
+            return None, None, None
 
     @staticmethod
     def check_for_updates(current_version):

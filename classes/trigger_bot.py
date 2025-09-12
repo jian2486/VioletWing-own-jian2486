@@ -156,9 +156,6 @@ class CS2TriggerBot:
                     sleep(post_shot_delay)
 
                 sleep(MAIN_LOOP_SLEEP)
-            except KeyboardInterrupt:
-                logger.debug("TriggerBot stopped by user.")
-                self.stop()
             except Exception as e:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
 

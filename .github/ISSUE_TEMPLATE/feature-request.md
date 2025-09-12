@@ -3,7 +3,7 @@ name: Feature Request
 about: Suggest a new feature for the project.
 title: "[Enhancement]: "
 labels: "Enhancement"
-assignees: Jesewe
+assignees: ""
 ---
 
 ### Describe the Problem

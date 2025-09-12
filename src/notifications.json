@@ -26,5 +26,12 @@
     "url": "https://github.com/Jesewe/VioletWing/releases/tag/v1.2.8",
     "timestamp": "2025-08-16",
     "message": "VioletWing has been updated to version 1.2.8. This release includes a fix for the ESP feature."
+  },
+  {
+    "number": "5",
+    "title": "VioletWing Help Center",
+    "url": "https://violetwing.featurebase.app/en/help",
+    "timestamp": "2025-09-09",
+    "message": "We have launched the VioletWing Help Center to provide users with comprehensive guides, FAQs, and troubleshooting tips. Visit the Help Center to find answers to common questions and learn how to make the most of VioletWing."
   }
 ]

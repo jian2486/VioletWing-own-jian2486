@@ -17,6 +17,8 @@ class ConfigManager:
     VERSION = "v1.2.8.3"
     # Directory where the update files are stored
     UPDATE_DIRECTORY = os.path.expanduser(r'~\AppData\Local\Requests\ItsJesewe\Update')
+    # Directory where the offsets files are stored
+    OFFSETS_DIRECTORY = os.path.expanduser(r'~\AppData\Local\Requests\ItsJesewe\Offsets')
     # Directory where the configuration file is stored
     CONFIG_DIRECTORY = os.path.expanduser(r'~\AppData\Local\Requests\ItsJesewe')
     # Full path to the configuration file
@@ -28,7 +30,11 @@ class ConfigManager:
             "Trigger": False,
             "Overlay": False,
             "Bunnyhop": False,
-            "Noflash": False
+            "Noflash": False,
+            "OffsetSource": "server",
+            "OffsetsFile": str(Path(OFFSETS_DIRECTORY) / "offsets.json"),
+            "ClientDLLFile": str(Path(OFFSETS_DIRECTORY) / "client_dll.json"),
+            "ButtonsFile": str(Path(OFFSETS_DIRECTORY) / "buttons.json")
         },
         "Trigger": {
             "TriggerKey": "x",
@@ -85,6 +91,9 @@ class ConfigManager:
 
         # Ensure the configuration directory exists.
         os.makedirs(cls.CONFIG_DIRECTORY, exist_ok=True)
+
+        # Ensure the offsets directory exists.
+        os.makedirs(cls.OFFSETS_DIRECTORY, exist_ok=True)
 
         if not Path(cls.CONFIG_FILE).exists():
             logger.info("config.json not found at %s, creating a default configuration.", cls.CONFIG_FILE)
