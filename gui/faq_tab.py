@@ -11,14 +11,14 @@ def populate_faq(main_window, frame):
     
     # Frame for page title and subtitle
     title_frame = ctk.CTkFrame(faq_container, fg_color="transparent")
-    title_frame.pack(fill="x", pady=(0, 40))
+    title_frame.pack(fill="x", pady=(0, 45))
     
     # FAQ title with icon
     ctk.CTkLabel(
         title_frame,
         text="❓ Frequently Asked Questions",
-        font=("Chivo", 32, "bold"),
-        text_color=("#1f2937", "#E0E0E0")
+        font=("Chivo", 36, "bold"),
+        text_color=("#1f2937", "#ffffff")
     ).pack(anchor="w")
     
     # Subtitle providing context
@@ -26,8 +26,8 @@ def populate_faq(main_window, frame):
         title_frame,
         text="Find answers to common questions about TriggerBot, Overlay, Bunnyhop, and NoFlash usage and configuration",
         font=("Gambetta", 16),
-        text_color=("#6b7280", "#9ca3af")
-    ).pack(anchor="w", pady=(8, 0))
+        text_color=("#64748b", "#94a3b8")
+    ).pack(anchor="w", pady=(10, 0))
     
     # List of FAQ items
     faqs = [
@@ -110,90 +110,90 @@ def populate_faq(main_window, frame):
         # Card for each FAQ item
         faq_card = ctk.CTkFrame(
             faq_container,
-            corner_radius=12,
-            fg_color=("#ffffff", "#161b22"),
-            border_width=1,
-            border_color=("#e5e7eb", "#30363d")
+            corner_radius=25,
+            fg_color=("#ffffff", "#1a1b23"),
+            border_width=3,
+            border_color=("#e2e8f0", "#2d3748")
         )
-        faq_card.pack(fill="x", pady=(0, 16))
+        faq_card.pack(fill="x", pady=(0, 25))
         
         # Frame for question header
         question_frame = ctk.CTkFrame(faq_card, fg_color="transparent")
-        question_frame.pack(fill="x", padx=24, pady=(20, 10))
+        question_frame.pack(fill="x", padx=30, pady=(25, 15))
         
         # Number badge for question
         number_badge = ctk.CTkFrame(
             question_frame,
-            width=30,
-            height=30,
-            corner_radius=15,
-            fg_color="#D5006D"
+            width=45,
+            height=45,
+            corner_radius=22,
+            fg_color=("#D5006D", "#E91E63")
         )
-        number_badge.pack(side="left", padx=(0, 12))
+        number_badge.pack(side="left", padx=(0, 18))
         number_badge.pack_propagate(False)
         
         # Number inside badge
         ctk.CTkLabel(
             number_badge,
             text=str(i+1),
-            font=("Chivo", 12, "bold"),
-            text_color="white"
+            font=("Chivo", 16, "bold"),
+            text_color="#ffffff"
         ).place(relx=0.5, rely=0.5, anchor="center")
         
         # Question text
         question_label = ctk.CTkLabel(
             question_frame,
             text=question,
-            font=("Chivo", 16, "bold"),
-            text_color=("#1f2937", "#E0E0E0"),
+            font=("Chivo", 19, "bold"),
+            text_color=("#1f2937", "#ffffff"),
             anchor="w"
         )
         question_label.pack(side="left", fill="x", expand=True)
         
         # Frame for answer text
         answer_frame = ctk.CTkFrame(faq_card, fg_color="transparent")
-        answer_frame.pack(fill="x", padx=66, pady=(0, 20))
+        answer_frame.pack(fill="x", padx=75, pady=(0, 25))
         
         # Answer text with wrapping
         ctk.CTkLabel(
             answer_frame,
             text=answer,
-            font=("Gambetta", 14),
+            font=("Gambetta", 15),
             text_color=("#4b5563", "#9ca3af"),
             anchor="w",
-            wraplength=750,
+            wraplength=820,
             justify="left"
         ).pack(fill="x")
     
     # Footer with additional help information
     footer_frame = ctk.CTkFrame(
         faq_container,
-        corner_radius=12,
-        fg_color=("#f8fafc", "#0d1117"),
-        border_width=1,
-        border_color=("#e2e8f0", "#21262d")
+        corner_radius=25,
+        fg_color=("#f8fafc", "#0f1116"),
+        border_width=3,
+        border_color=("#e2e8f0", "#2d3748")
     )
-    footer_frame.pack(fill="x", pady=(30, 0))
+    footer_frame.pack(fill="x", pady=(40, 0))
     
     # Footer title
     ctk.CTkLabel(
         footer_frame,
         text="💡 Still have questions?",
-        font=("Chivo", 16, "bold"),
-        text_color=("#1f2937", "#E0E0E0")
-    ).pack(pady=(20, 5))
+        font=("Chivo", 20, "bold"),
+        text_color=("#1f2937", "#ffffff")
+    ).pack(pady=(25, 8))
     
     # Footer guidance text
     ctk.CTkLabel(
         footer_frame,
         text="Explore these resources for more help or to contribute to VioletWing:",
-        font=("Gambetta", 14),
-        text_color=("#6b7280", "#9ca3af")
-    ).pack(pady=(0, 15))
+        font=("Gambetta", 15),
+        text_color=("#64748b", "#94a3b8")
+    ).pack(pady=(0, 20))
     
     # Links container
     links_container = ctk.CTkFrame(footer_frame, fg_color="transparent")
-    links_container.pack(pady=(0, 10))
+    links_container.pack(pady=(0, 15))
     
     # GitHub Issues link
     def open_github_issues():
@@ -204,13 +204,14 @@ def populate_faq(main_window, frame):
         links_container,
         text="🐛 Report Issues",
         command=open_github_issues,
-        font=("Chivo", 13, "bold"),
+        font=("Chivo", 14, "bold"),
         fg_color=("#ef4444", "#dc2626"),
         hover_color=("#dc2626", "#b91c1c"),
-        width=140,
-        height=32
+        width=160,
+        height=40,
+        corner_radius=20
     )
-    github_issues_btn.pack(side="left", padx=(0, 10))
+    github_issues_btn.pack(side="left", padx=(0, 15))
 
     # GitHub Releases link
     def open_github_releases():
@@ -221,13 +222,14 @@ def populate_faq(main_window, frame):
         links_container,
         text="📦 Check Updates",
         command=open_github_releases,
-        font=("Chivo", 13, "bold"),
+        font=("Chivo", 14, "bold"),
         fg_color=("#3b82f6", "#2563eb"),
         hover_color=("#2563eb", "#1d4ed8"),
-        width=140,
-        height=32
+        width=160,
+        height=40,
+        corner_radius=20
     )
-    github_releases_btn.pack(side="left", padx=(0, 10))
+    github_releases_btn.pack(side="left", padx=(0, 15))
 
     # Help Center link
     def open_help_center():
@@ -238,18 +240,19 @@ def populate_faq(main_window, frame):
         links_container,
         text="📚 Help Center",
         command=open_help_center,
-        font=("Chivo", 13, "bold"),
+        font=("Chivo", 14, "bold"),
         fg_color=("#10b981", "#059669"),
         hover_color=("#059669", "#047857"),
-        width=140,
-        height=32
+        width=160,
+        height=40,
+        corner_radius=20
     )
-    help_center_btn.pack(side="left", padx=(0, 10))
+    help_center_btn.pack(side="left", padx=(0, 15))
     
     # Additional footer text
     ctk.CTkLabel(
         footer_frame,
         text="Remember: This tool is for educational purposes only. Always respect game terms of service.",
-        font=("Gambetta", 12),
-        text_color=("#9ca3af", "#6b7280")
-    ).pack(pady=(15, 20))
+        font=("Gambetta", 13),
+        text_color=("#94a3b8", "#64748b")
+    ).pack(pady=(20, 25))
