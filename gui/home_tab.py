@@ -44,28 +44,16 @@ def populate_dashboard(main_window, frame):
     )
     subtitle_label.pack(side="left", padx=(20, 0), pady=(10, 0))
     
-    # Frame for status cards - using grid layout for better responsiveness
+    # Frame for status cards - using grid layout for better responsiveness (now 3 columns)
     stats_frame = ctk.CTkFrame(dashboard, fg_color="transparent")
     stats_frame.pack(fill="x", pady=(0, 40))
     
-    # Configure grid columns to be equal width
+    # Configure grid columns to be equal width (reduced to 3 columns)
     stats_frame.grid_columnconfigure(0, weight=1)
     stats_frame.grid_columnconfigure(1, weight=1)
     stats_frame.grid_columnconfigure(2, weight=1)
-    stats_frame.grid_columnconfigure(3, weight=1)
     
-    # Bot status card with stored label reference
-    status_card, main_window.bot_status_label = create_stat_card(
-        main_window,
-        stats_frame,
-        "🔮 Status",
-        "Inactive",
-        "#ef4444",
-        "Current operational state"
-    )
-    status_card.grid(row=0, column=0, sticky="ew", padx=(0, 5))
-    
-    # CS2 latest patch card
+    # CS2 latest patch card - moved to first position
     cs2_patch_card, main_window.cs2_patch_label = create_stat_card(
         main_window,
         stats_frame,
@@ -74,9 +62,9 @@ def populate_dashboard(main_window, frame):
         "#6b7280",
         "Latest Counter-Strike 2 patch"
     )
-    cs2_patch_card.grid(row=0, column=1, sticky="ew", padx=(5, 5))
+    cs2_patch_card.grid(row=0, column=0, sticky="ew", padx=(0, 10))
 
-    # Last update card with stored label reference
+    # Last update card with stored label reference - moved to second position
     update_card, main_window.update_value_label = create_stat_card(
         main_window,
         stats_frame,
@@ -85,9 +73,9 @@ def populate_dashboard(main_window, frame):
         "#6b7280",
         "Last offsets synchronization"
     )
-    update_card.grid(row=0, column=2, sticky="ew", padx=(5, 5))
+    update_card.grid(row=0, column=1, sticky="ew", padx=(10, 10))
 
-    # Version card
+    # Version card - moved to third position
     version_card, version_value_label = create_stat_card(
         main_window,
         stats_frame,
@@ -96,7 +84,7 @@ def populate_dashboard(main_window, frame):
         "#D5006D",
         "Current application version"
     )
-    version_card.grid(row=0, column=3, sticky="ew", padx=(5, 0))
+    version_card.grid(row=0, column=2, sticky="ew", padx=(10, 0))
     
     # Control panel section
     control_panel = ctk.CTkFrame(
@@ -258,43 +246,43 @@ def populate_dashboard(main_window, frame):
 
 def create_stat_card(main_window, parent, title, value, color, subtitle):
     """Create a modern stat card and return the card and value label."""
-    # Card frame with modern styling
+    # Card frame with enhanced modern styling
     card = ctk.CTkFrame(
         parent,
-        corner_radius=20,
+        corner_radius=25,
         fg_color=("#ffffff", "#1a1b23"),
-        border_width=2,
+        border_width=3,
         border_color=("#e2e8f0", "#2d3748")
     )
     
-    # Content frame within card
+    # Content frame within card with more padding
     content = ctk.CTkFrame(card, fg_color="transparent")
-    content.pack(fill="both", expand=True, padx=20, pady=25)
+    content.pack(fill="both", expand=True, padx=30, pady=30)
     
-    # Card header
+    # Card header with improved styling
     ctk.CTkLabel(
         content,
         text=title,
-        font=("Chivo", 14, "bold"),
+        font=("Chivo", 16, "bold"),
         text_color=("#64748b", "#94a3b8"),
         anchor="w"
-    ).pack(fill="x", pady=(0, 10))
+    ).pack(fill="x", pady=(0, 15))
     
-    # Value label with dynamic color
+    # Value label with enhanced font and dynamic color
     value_label = ctk.CTkLabel(
         content,
         text=value,
-        font=("Chivo", 24, "bold"),
+        font=("Chivo", 28, "bold"),
         text_color=color,
         anchor="w"
     )
-    value_label.pack(fill="x", pady=(0, 6))
+    value_label.pack(fill="x", pady=(0, 10))
     
-    # Subtitle providing context
+    # Subtitle providing context with improved styling
     ctk.CTkLabel(
         content,
         text=subtitle,
-        font=("Gambetta", 11),
+        font=("Gambetta", 12),
         text_color=("#94a3b8", "#64748b"),
         anchor="w"
     ).pack(fill="x")
@@ -495,15 +483,9 @@ def update_client_status(self, status, color):
     """Update the client status indicators across the dashboard."""
     # Update header status label
     self.status_label.configure(text=status, text_color=color)
-    # Update dashboard status label
-    self.bot_status_label.configure(text=status, text_color=color)
 
     # Update status dot color in header
     for widget in self.status_frame.winfo_children():
         if isinstance(widget, ctk.CTkFrame) and widget.cget("width") == 12:
             widget.configure(fg_color=color)
             break
-    
-    # Ensure dashboard status updates if widget exists
-    if hasattr(self, 'bot_status_label') and self.bot_status_label.winfo_exists():
-        self.bot_status_label.configure(text=status, text_color=color)
