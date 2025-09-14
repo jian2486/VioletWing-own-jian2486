@@ -66,14 +66,14 @@ class MainWindow:
         # Create the main window with a title and initial size
         self.root = ctk.CTk()
         self.root.title(f"VioletWing {ConfigManager.VERSION}")
-        self.root.geometry("1300x700")
+        self.root.geometry("1400x800")
         self.root.resizable(True, True)
-        self.root.minsize(1300, 700)
+        self.root.minsize(1400, 800)
 
         # Center the window on the screen
-        x = (self.root.winfo_screenwidth() // 2) - (1300 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (700 // 2)
-        self.root.geometry(f"1300x700+{x}+{y}")
+        x = (self.root.winfo_screenwidth() // 2) - (1400 // 2)
+        y = (self.root.winfo_screenheight() // 2) - (800 // 2)
+        self.root.geometry(f"1400x800+{x}+{y}")
         
         # Set the window icon using a resource path utility
         self.root.iconbitmap(Utility.resource_path('src/img/icon.ico'))
