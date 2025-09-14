@@ -27,9 +27,9 @@ def populate_notifications(main_window, frame):
     header_frame = ctk.CTkFrame(
         notifications_container,
         fg_color="transparent",
-        height=90
+        height=100
     )
-    header_frame.pack(fill="x", pady=(0, 28))
+    header_frame.pack(fill="x", pady=(0, 35))
     header_frame.pack_propagate(False)
 
     # Container for title and subtitle
@@ -40,48 +40,59 @@ def populate_notifications(main_window, frame):
     title_label = ctk.CTkLabel(
         title_container,
         text="🔔 Notifications",
-        font=("Chivo", 32, "bold"),
-        text_color=("#1f2937", "#f9fafb")
+        font=("Chivo", 36, "bold"),
+        text_color=("#1f2937", "#ffffff")
     )
-    title_label.pack(anchor="w", pady=(8, 0))
+    title_label.pack(anchor="w", pady=(10, 0))
 
     # Subtitle
     subtitle_label = ctk.CTkLabel(
         title_container,
         text="Latest news and updates for VioletWing",
-        font=("Gambetta", 15),
-        text_color=("#6b7280", "#9ca3af")
+        font=("Gambetta", 16),
+        text_color=("#64748b", "#94a3b8")
     )
-    subtitle_label.pack(anchor="w", pady=(4, 0))
+    subtitle_label.pack(anchor="w", pady=(8, 0))
 
     # Loading card
     loading_card = ctk.CTkFrame(
         notifications_container,
-        corner_radius=20,
+        corner_radius=25,
         fg_color=("#ffffff", "#1a1b23"),
-        border_width=2,
+        border_width=3,
         border_color=("#e2e8f0", "#2d3748")
     )
     loading_card.pack(fill="x", pady=(0, 40))
 
     # Loading content
     loading_content = ctk.CTkFrame(loading_card, fg_color="transparent")
-    loading_content.pack(padx=48, pady=36)
+    loading_content.pack(padx=50, pady=40)
 
     # Loading indicator and message
-    ctk.CTkFrame(
+    loading_indicator = ctk.CTkFrame(
         loading_content,
-        width=48,
-        height=48,
-        corner_radius=24,
+        width=60,
+        height=60,
+        corner_radius=30,
         fg_color=("#3B82F6", "#60A5FA")
-    ).pack()
+    )
+    loading_indicator.pack()
+
+    # Loading spinner icon
+    ctk.CTkLabel(
+        loading_indicator,
+        text="⟳",
+        font=("Chivo", 28, "bold"),
+        text_color="#ffffff"
+    ).place(relx=0.5, rely=0.5, anchor="center")
+
+    # Loading message
     ctk.CTkLabel(
         loading_content,
         text="Loading notifications data...",
-        font=("Gambetta", 18),
+        font=("Gambetta", 18, "bold"),
         text_color=("#64748B", "#94A3B8")
-    ).pack(pady=(20, 0))
+    ).pack(pady=(24, 0))
 
     # Fetch notifications data in a background thread
     def fetch_notifications():
@@ -127,33 +138,33 @@ def populate_notifications(main_window, frame):
         # Card for each notification
         notification_card = ctk.CTkFrame(
             container,
-            corner_radius=20,
+            corner_radius=25,
             fg_color=("#ffffff", "#1a1b23"),
-            border_width=2,
+            border_width=3,
             border_color=("#e2e8f0", "#2d3748")
         )
-        notification_card.pack(fill="x", pady=(0, 40 if not is_last else 0))
+        notification_card.pack(fill="x", pady=(0, 30 if not is_last else 0))
 
         # Frame for notification header
         header_frame = ctk.CTkFrame(notification_card, fg_color="transparent")
-        header_frame.pack(fill="x", padx=24, pady=(20, 10))
+        header_frame.pack(fill="x", padx=30, pady=(25, 15))
 
         # Number badge
         number_badge = ctk.CTkFrame(
             header_frame,
-            width=40,
-            height=40,
-            corner_radius=20,
+            width=50,
+            height=50,
+            corner_radius=25,
             fg_color=("#D5006D", "#E91E63")
         )
-        number_badge.pack(side="left", padx=(0, 12))
+        number_badge.pack(side="left", padx=(0, 18))
         number_badge.pack_propagate(False)
 
         # Number inside badge
         ctk.CTkLabel(
             number_badge,
             text=str(notification.get('number', '')),
-            font=("Chivo", 16, "bold"),
+            font=("Chivo", 18, "bold"),
             text_color="#ffffff"
         ).place(relx=0.5, rely=0.5, anchor="center")
 
@@ -163,7 +174,7 @@ def populate_notifications(main_window, frame):
         title_label = ctk.CTkLabel(
             header_frame,
             text=title,
-            font=("Chivo", 18, "bold"),
+            font=("Chivo", 20, "bold"),
             text_color=("#1f2937", "#ffffff") if not url else ("#D5006D", "#E91E63"),
             anchor="w",
             cursor="hand2" if url else "arrow"
@@ -175,28 +186,38 @@ def populate_notifications(main_window, frame):
         # Timestamp
         timestamp = notification.get('timestamp', '')
         if timestamp:
-            ctk.CTkLabel(
+            timestamp_frame = ctk.CTkFrame(
                 header_frame,
+                corner_radius=15,
+                fg_color=("#f1f5f9", "#2d3748"),
+                border_width=1,
+                border_color=("#e2e8f0", "#374151")
+            )
+            timestamp_frame.pack(side="right")
+            
+            ctk.CTkLabel(
+                timestamp_frame,
                 text=timestamp,
-                font=("Gambetta", 14),
+                font=("Gambetta", 13, "bold"),
                 text_color=("#6b7280", "#9ca3af"),
-                anchor="e"
-            ).pack(side="right")
+                anchor="center"
+            ).pack(padx=12, pady=6)
 
         # Frame for message text
         message_frame = ctk.CTkFrame(notification_card, fg_color="transparent")
-        message_frame.pack(fill="x", padx=66, pady=(0, 20))
+        message_frame.pack(fill="x", padx=78, pady=(0, 25))
 
         # Message text with wrapping
-        ctk.CTkLabel(
+        message_label = ctk.CTkLabel(
             message_frame,
             text=notification.get('message', 'No Message'),
-            font=("Gambetta", 14),
+            font=("Gambetta", 15),
             text_color=("#4b5563", "#9ca3af"),
             anchor="w",
-            wraplength=750,
+            wraplength=800,
             justify="left"
-        ).pack(fill="x")
+        )
+        message_label.pack(fill="x")
 
     def show_error(loading_card, error_msg):
         """Display an error message if data fetch fails."""
@@ -205,57 +226,57 @@ def populate_notifications(main_window, frame):
         # Error card
         error_card = ctk.CTkFrame(
             notifications_container,
-            corner_radius=16,
+            corner_radius=25,
             fg_color=("#FEF2F2", "#1F1715"),
-            border_width=2,
+            border_width=3,
             border_color=("#FCA5A5", "#7F1D1D")
         )
         error_card.pack(fill="x", pady=(0, 40))
 
         # Error content
         content = ctk.CTkFrame(error_card, fg_color="transparent")
-        content.pack(padx=48, pady=36)
+        content.pack(padx=50, pady=40)
 
         # Error icon
         icon = ctk.CTkFrame(
             content,
-            width=56,
-            height=56,
-            corner_radius=28,
+            width=70,
+            height=70,
+            corner_radius=35,
             fg_color=("#DC2626", "#7F1D1D")
         )
         icon.pack()
         ctk.CTkLabel(
             icon,
             text="✕",
-            font=("Chivo", 24, "bold"),
+            font=("Chivo", 30, "bold"),
             text_color="#FFFFFF"
-        ).pack(expand=True)
+        ).place(relx=0.5, rely=0.5, anchor="center")
 
         # Error title
         ctk.CTkLabel(
             content,
             text="Failed to Load Notifications",
-            font=("Chivo", 22, "bold"),
+            font=("Chivo", 26, "bold"),
             text_color=("#DC2626", "#F87171")
-        ).pack(pady=(20, 8))
+        ).pack(pady=(24, 10))
 
         # Error message
         ctk.CTkLabel(
             content,
             text=error_msg,
-            font=("Gambetta", 16),
+            font=("Gambetta", 17),
             text_color=("#991B1B", "#EF4444"),
-            wraplength=600
+            wraplength=700
         ).pack()
 
         # Guidance text
         ctk.CTkLabel(
             content,
             text="Please check your internet connection or verify the notifications data.",
-            font=("Gambetta", 14),
+            font=("Gambetta", 15),
             text_color=("#B91C1C", "#FCA5A5")
-        ).pack(pady=(12, 0))
+        ).pack(pady=(16, 0))
 
     # Start fetching notifications data
     threading.Thread(target=fetch_notifications, daemon=True).start()
