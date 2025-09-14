@@ -13,90 +13,99 @@ def populate_logs(main_window, frame):
         frame,
         fg_color="transparent"
     )
-    logs_container.pack(fill="both", expand=True, padx=24, pady=24)
+    logs_container.pack(fill="both", expand=True, padx=40, pady=40)
 
-    # Header section with fixed height
+    # Header section
     header_frame = ctk.CTkFrame(
         logs_container,
         fg_color="transparent",
-        height=90
+        height=100
     )
-    header_frame.pack(fill="x", pady=(0, 28))
+    header_frame.pack(fill="x", pady=(0, 35))
     header_frame.pack_propagate(False)
 
     # Container for title and subtitle
     title_container = ctk.CTkFrame(header_frame, fg_color="transparent")
     title_container.pack(side="left", fill="y")
 
-    # Title label with bold styling
+    # Title label
     title_label = ctk.CTkLabel(
         title_container,
         text="📋 Application Logs",
-        font=("Chivo", 32, "bold"),
-        text_color=("#1f2937", "#f9fafb")
+        font=("Chivo", 36, "bold"),
+        text_color=("#1f2937", "#ffffff")
     )
-    title_label.pack(anchor="w", pady=(8, 0))
+    title_label.pack(anchor="w", pady=(10, 0))
 
     # Subtitle providing context
     subtitle_label = ctk.CTkLabel(
         title_container,
         text="Real-time application logs and system events",
-        font=("Gambetta", 15),
-        text_color=("#6b7280", "#9ca3af")
+        font=("Gambetta", 16),
+        text_color=("#64748b", "#94a3b8")
     )
-    subtitle_label.pack(anchor="w", pady=(4, 0))
+    subtitle_label.pack(anchor="w", pady=(8, 0))
 
     # Main card for logs display
     logs_card = ctk.CTkFrame(
         logs_container,
-        corner_radius=16,
-        fg_color=("#ffffff", "#18181b"),
-        border_width=1,
-        border_color=("#e2e8f0", "#27272a")
+        corner_radius=25,
+        fg_color=("#ffffff", "#1a1b23"),
+        border_color=("#e2e8f0", "#2d3748")
     )
     logs_card.pack(fill="both", expand=True)
 
     # Header bar within the logs card
     logs_header = ctk.CTkFrame(
         logs_card,
-        height=60,
-        fg_color=("#f8fafc", "#27272a"),
-        border_width=0
+        height=70,
+        corner_radius=22,
+        fg_color=("#f1f5f9", "#262626"),
     )
-    logs_header.pack(fill="x", padx=2, pady=(2, 0))
+    logs_header.pack(fill="x", padx=3, pady=(3, 0))
     logs_header.pack_propagate(False)
 
     # Content frame for header elements
     header_content = ctk.CTkFrame(logs_header, fg_color="transparent")
-    header_content.pack(fill="both", expand=True, padx=24, pady=16)
+    header_content.pack(fill="both", expand=True, padx=30, pady=20)
 
     # Logs section title
     logs_title = ctk.CTkLabel(
         header_content,
         text="System Logs",
-        font=("Chivo", 18, "bold"),
-        text_color=("#1f2937", "#f1f5f9")
+        font=("Chivo", 20, "bold"),
+        text_color=("#1f2937", "#ffffff")
     )
     logs_title.pack(side="left")
 
     # Status indicator frame
-    status_frame = ctk.CTkFrame(header_content, fg_color="transparent")
+    status_frame = ctk.CTkFrame(
+        header_content, 
+        corner_radius=20,
+        fg_color=("#dcfce7", "#14532d"),
+        border_width=2,
+        border_color=("#bbf7d0", "#166534")
+    )
     status_frame.pack(side="right")
 
-    # Status dot indicating live updates
+    # Status content container
+    status_content = ctk.CTkFrame(status_frame, fg_color="transparent")
+    status_content.pack(padx=15, pady=8)
+
+    # Status dot indicator
     status_dot = ctk.CTkLabel(
-        status_frame,
+        status_content,
         text="●",
-        font=("Chivo", 14),
+        font=("Chivo", 16),
         text_color=("#059669", "#10b981")
     )
-    status_dot.pack(side="left", padx=(0, 8))
+    status_dot.pack(side="left", padx=(0, 10))
 
     # Status text "Live"
     status_text = ctk.CTkLabel(
-        status_frame,
+        status_content,
         text="Live",
-        font=("Chivo", 14, "bold"),
+        font=("Chivo", 15, "bold"),
         text_color=("#059669", "#10b981")
     )
     status_text.pack(side="left")
@@ -107,20 +116,20 @@ def populate_logs(main_window, frame):
         corner_radius=0,
         fg_color="transparent"
     )
-    logs_content.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+    logs_content.pack(fill="both", expand=True, padx=3, pady=(0, 3))
 
     # Text widget to display logs
     main_window.log_text = ctk.CTkTextbox(
         logs_content,
-        corner_radius=0,
+        corner_radius=22,
         border_width=0,
-        font=("Chivo", 13),
+        font=("Chivo", 14),
         fg_color=("#fcfcfd", "#0f0f11"),
         text_color=("#1f2937", "#e2e8f0"),
         state="disabled",
         wrap="word"
     )
-    main_window.log_text.pack(fill="both", expand=True, padx=20, pady=20)
+    main_window.log_text.pack(fill="both", expand=True, padx=25, pady=25)
 
     # Load existing logs and set initial position
     _load_logs_safely(main_window)
@@ -133,7 +142,7 @@ def _load_logs_safely(main_window):
     """Safely load logs with duplicate prevention and proper error handling."""
     logger = Logger.get_logger()
     try:
-        # Display welcome message if log file doesn’t exist
+        # Display welcome message if log file doesn't exist
         if not os.path.exists(Logger.LOG_FILE):
             welcome_msg = (
                 "=== Application Logs ===\n"
