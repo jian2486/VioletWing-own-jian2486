@@ -24,6 +24,7 @@ class Utility:
         - Logs an error if either request fails or the server returns a non-200 status code.
         - Handles exceptions gracefully, ensuring no unhandled errors crash the application.
         - Supports loading from local files if configured.
+        - Supports Jesewe Server as an alternative offset source.
         """
         from classes.config_manager import ConfigManager
         config = ConfigManager.load_config()
@@ -73,36 +74,55 @@ class Utility:
                 ConfigManager.save_config(config)
                 return Utility.fetch_offsets()  # Recursive fallback to server
         
-        # Default server fetch
+        # Server-based offset fetching (a2x or JeseweSource)
         try:
-            offsets_url = os.getenv(
-                'OFFSETS_URL',
-                'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json'
-            )
+            if source == "jesewesource":
+                # Default public Server URLs (Jesewe/cs2-dumper)
+                offsets_url = os.getenv(
+                    'OFFSETS_URL',
+                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/offsets.json'
+                )
+                client_dll_url = os.getenv(
+                    'CLIENT_DLL_URL',
+                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/client_dll.json'
+                )
+                buttons_url = os.getenv(
+                    'BUTTONS_URL',
+                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/buttons.json'
+                )
+                server_name = "Jesewe Source"
+            else:
+                # Default public Server URLs (a2x/cs2-dumper)
+                offsets_url = os.getenv(
+                    'OFFSETS_URL',
+                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json'
+                )
+                client_dll_url = os.getenv(
+                    'CLIENT_DLL_URL',
+                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json'
+                )
+                buttons_url = os.getenv(
+                    'BUTTONS_URL',
+                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json'
+                )
+                server_name = "Public Server"
+            
+            logger.info(f"Fetching offsets from {server_name}...")
+            
             response_offset = requests.get(offsets_url)
-
-            client_dll_url = os.getenv(
-                'CLIENT_DLL_URL',
-                'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json'
-            )
             response_client = requests.get(client_dll_url)
-
-            buttons_url = os.getenv(
-                'BUTTONS_URL',
-                'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json'
-            )
             response_buttons = requests.get(buttons_url)
 
             if response_offset.status_code != 200:
-                logger.error("Failed to fetch offsets: offsets.json request failed.")
+                logger.error(f"Failed to fetch offsets from {server_name}: offsets.json request failed (status: {response_offset.status_code}).")
                 return None, None, None
 
             if response_client.status_code != 200:
-                logger.error("Failed to fetch offsets: client_dll.json request failed.")
+                logger.error(f"Failed to fetch offsets from {server_name}: client_dll.json request failed (status: {response_client.status_code}).")
                 return None, None, None
             
             if response_buttons.status_code != 200:
-                logger.error("Failed to fetch buttons: buttons.json request failed.")
+                logger.error(f"Failed to fetch buttons from {server_name}: buttons.json request failed (status: {response_buttons.status_code}).")
                 return None, None, None
 
             try:
@@ -113,20 +133,20 @@ class Utility:
                 # Validate by attempting to extract offsets
                 extracted = Utility.extract_offsets(offset, client, buttons)
                 if extracted is None:
-                    logger.error("Server offset files invalid: Missing required offsets.")
+                    logger.error(f"Offset files from {server_name} invalid: Missing required offsets.")
                     return None, None, None
                 
-                logger.info("Loaded and validated server offsets.")
+                logger.info(f"Successfully loaded and validated offsets from {server_name}.")
                 return offset, client, buttons
             except orjson.JSONDecodeError as e:
-                logger.error(f"Failed to decode JSON response: {e}")
+                logger.error(f"Failed to decode JSON response from {server_name}: {e}")
                 return None, None, None
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {e}")
+            logger.error(f"Request failed for {server_name}: {e}")
             return None, None, None
         except Exception as e:
-            logger.exception(f"An unexpected error occurred: {e}")
+            logger.exception(f"An unexpected error occurred while fetching from {server_name}: {e}")
             return None, None, None
 
     @staticmethod

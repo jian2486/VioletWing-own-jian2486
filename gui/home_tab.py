@@ -324,7 +324,7 @@ def fetch_last_update(main_window):
         # Try loading cached timestamp first
         cached_timestamp = load_cached_timestamp()
         if cached_timestamp:
-            logger.info("Using cached timestamp: %s", cached_timestamp)
+            logger.debug("Using cached timestamp: %s", cached_timestamp)
             update_ui(cached_timestamp, "#22c55e")
 
         # Load config to check for GitHub token
@@ -423,7 +423,7 @@ def fetch_cs2_latest_patch(main_window):
         # Try loading cached patch date first
         cached_patch = load_cached_patch()
         if cached_patch:
-            logger.info("Using cached CS2 patch date: %s", cached_patch)
+            logger.debug("Using cached CS2 patch date: %s", cached_patch)
             update_ui(cached_patch, "#22c55e")
 
         # Headers for Steam API request (minimal, as it's public)

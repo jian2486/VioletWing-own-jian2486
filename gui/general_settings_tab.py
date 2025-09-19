@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 from pathlib import Path
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from classes.config_manager import ConfigManager
 
 def populate_general_settings(main_window, frame):
@@ -204,7 +204,7 @@ def create_offsets_section(main_window, parent):
     offset_dropdown = ctk.CTkOptionMenu(
         header,
         variable=main_window.offset_source_var,
-        values=["Server", "Local"],
+        values=["Server", "JeseweSource", "Local"],
         command=lambda e: update_offset_source(main_window, e),
         font=("Chivo", 14),
         dropdown_font=("Chivo", 14),
@@ -304,6 +304,14 @@ def update_offset_source(main_window, selected):
     """Update offset source and show/hide file selection frame."""
     main_window.triggerbot.config["General"]["OffsetSource"] = selected.lower()
     main_window.save_settings(show_message=False)
+
+    # Show messagebox to inform user about restart requirement
+    messagebox.showwarning(
+        "Restart Required", 
+        "Offset source has been changed. Please restart the application for the changes to take effect and ensure proper functionality."
+    )
+
+    # Show/hide local files frame
     if selected == "Local":
         main_window.local_files_frame.pack(fill="x", padx=40, pady=(0, 40))
     else:
