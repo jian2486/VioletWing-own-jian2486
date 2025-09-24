@@ -9,7 +9,7 @@ from packaging import version
 from dateutil.parser import parse as parse_date
 from pathlib import Path
 
-from classes.config_manager import COLOR_CHOICES
+from classes.config_manager import ConfigManager, COLOR_CHOICES
 from classes.logger import Logger
 
 # Initialize the logger for consistent logging
@@ -17,18 +17,60 @@ logger = Logger.get_logger()
 
 class Utility:
     @staticmethod
+    def load_offset_sources():
+        """
+        Loads available offset sources from src/offsets.json
+        Returns a dictionary with source configurations
+        """
+        try:
+            response = requests.get('https://raw.githubusercontent.com/Jesewe/VioletWing/refs/heads/main/src/offsets.json', timeout=10)
+            response.raise_for_status()
+            sources_data = orjson.loads(response.content)
+            
+            # Validate structure
+            for source_id, source_config in sources_data.items():
+                required_keys = ["name", "author", "repository", "offsets_url", "client_dll_url", "buttons_url"]
+                missing_keys = [key for key in required_keys if key not in source_config]
+                if missing_keys:
+                    logger.error(f"Source '{source_id}' missing keys: {missing_keys}")
+                    continue
+            
+            logger.info(f"Loaded {len(sources_data)} offsets sources from remote offsets.json")
+            return sources_data
+            
+        except Exception as e:
+            logger.warning(f"Failed to load remote offsets sources: {e}, using default sources")
+            return {
+                "a2x": {
+                    "name": "A2X Source",
+                    "author": "a2x",
+                    "repository": "a2x/cs2-dumper",
+                    "offsets_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json",
+                    "client_dll_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json",
+                    "buttons_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json"
+                },
+                "jesewe": {
+                    "name": "Jesewe Source", 
+                    "author": "Jesewe",
+                    "repository": "Jesewe/cs2-dumper",
+                    "offsets_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/offsets.json",
+                    "client_dll_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/client_dll.json",
+                    "buttons_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/buttons.json"
+                }
+            }
+
+    @staticmethod
     def fetch_offsets():
         """
-        Fetches JSON data from two remote URLs and parses it using orjson.
-        - Retrieves data from 'offsets.json' and 'client_dll.json' on GitHub.
+        Fetches JSON data from remote URLs or local files based on configuration.
+        - Supports dynamic offset sources loaded from src/offsets.json
+        - Retrieves data from 'offsets.json', 'client_dll.json', and 'buttons.json'
         - Logs an error if either request fails or the server returns a non-200 status code.
         - Handles exceptions gracefully, ensuring no unhandled errors crash the application.
         - Supports loading from local files if configured.
-        - Supports Jesewe Server as an alternative offset source.
         """
-        from classes.config_manager import ConfigManager
         config = ConfigManager.load_config()
-        source = config["General"].get("OffsetSource", "server")
+        source = config["General"].get("OffsetSource", "a2x")
         
         if source == "local":
             config_dir = Path(ConfigManager.CONFIG_DIRECTORY)
@@ -39,10 +81,10 @@ class Utility:
             try:
                 if not all(f.exists() for f in [Path(offsets_file), Path(client_file), Path(buttons_file)]):
                     missing = [f.name for f in [Path(offsets_file), Path(client_file), Path(buttons_file)] if not f.exists()]
-                    logger.error(f"Local offset files missing: {', '.join(missing)}. Falling back to server.")
-                    config["General"]["OffsetSource"] = "server"
+                    logger.error(f"Local offset files missing: {', '.join(missing)}. Falling back to a2x.")
+                    config["General"]["OffsetSource"] = "a2x"
                     ConfigManager.save_config(config)
-                    return Utility.fetch_offsets()  # Recursive fallback to server
+                    return Utility.fetch_offsets()  # Recursive fallback to a2x
                 
                 offset_bytes = Path(offsets_file).read_bytes()
                 client_bytes = Path(client_file).read_bytes()
@@ -55,59 +97,52 @@ class Utility:
                 # Validate by attempting to extract offsets
                 extracted = Utility.extract_offsets(offset, client, buttons)
                 if extracted is None:
-                    logger.error("Local offset files invalid: Missing required offsets. Falling back to server.")
-                    config["General"]["OffsetSource"] = "server"
+                    logger.error("Local offset files invalid: Missing required offsets. Falling back to a2x.")
+                    config["General"]["OffsetSource"] = "a2x"
                     ConfigManager.save_config(config)
-                    return Utility.fetch_offsets()  # Recursive fallback to server
+                    return Utility.fetch_offsets()  # Recursive fallback to a2x
                 
                 logger.info("Loaded and validated local offsets.")
                 return offset, client, buttons
                 
             except (orjson.JSONDecodeError, IOError) as e:
-                logger.error(f"Failed to load local offset files: {e}. Falling back to server.")
-                config["General"]["OffsetSource"] = "server"
+                logger.error(f"Failed to load local offset files: {e}. Falling back to a2x.")
+                config["General"]["OffsetSource"] = "a2x"
                 ConfigManager.save_config(config)
-                return Utility.fetch_offsets()  # Recursive fallback to server
+                return Utility.fetch_offsets()  # Recursive fallback to a2x
             except Exception as e:
-                logger.exception(f"Unexpected error loading local offsets: {e}. Falling back to server.")
-                config["General"]["OffsetSource"] = "server"
+                logger.exception(f"Unexpected error loading local offsets: {e}. Falling back to a2x.")
+                config["General"]["OffsetSource"] = "a2x"
                 ConfigManager.save_config(config)
-                return Utility.fetch_offsets()  # Recursive fallback to server
+                return Utility.fetch_offsets()  # Recursive fallback to a2x
         
-        # Server-based offset fetching (a2x or JeseweSource)
+        # Server-based offset fetching (dynamic sources)
         try:
-            if source == "jesewesource":
-                # Default public Server URLs (Jesewe/cs2-dumper)
-                offsets_url = os.getenv(
-                    'OFFSETS_URL',
-                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/offsets.json'
-                )
-                client_dll_url = os.getenv(
-                    'CLIENT_DLL_URL',
-                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/client_dll.json'
-                )
-                buttons_url = os.getenv(
-                    'BUTTONS_URL',
-                    'https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/buttons.json'
-                )
-                server_name = "Jesewe Source"
-            else:
-                # Default public Server URLs (a2x/cs2-dumper)
-                offsets_url = os.getenv(
-                    'OFFSETS_URL',
-                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json'
-                )
-                client_dll_url = os.getenv(
-                    'CLIENT_DLL_URL',
-                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json'
-                )
-                buttons_url = os.getenv(
-                    'BUTTONS_URL',
-                    'https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json'
-                )
-                server_name = "Public Server"
+            # Load available sources
+            available_sources = Utility.load_offset_sources()
             
-            logger.info(f"Fetching offsets from {server_name}...")
+            if source not in available_sources:
+                logger.error(f"Unknown offset source '{source}'. Falling back to a2x.")
+                source = "a2x"
+                config["General"]["OffsetSource"] = source
+                ConfigManager.save_config(config)
+                
+                if source not in available_sources:
+                    logger.error("No valid offset sources available.")
+                    return None, None, None
+            
+            source_config = available_sources[source]
+            
+            # Get URLs from source configuration (with environment variable override support)
+            offsets_url = os.getenv('OFFSETS_URL', source_config["offsets_url"])
+            client_dll_url = os.getenv('CLIENT_DLL_URL', source_config["client_dll_url"])
+            buttons_url = os.getenv('BUTTONS_URL', source_config["buttons_url"])
+            
+            server_name = source_config["name"]
+            author = source_config["author"]
+            repository = source_config["repository"]
+            
+            logger.debug(f"Fetching offsets from {server_name} (Author: {author}, Repo: {repository})...")
             
             response_offset = requests.get(offsets_url)
             response_client = requests.get(client_dll_url)
@@ -148,6 +183,33 @@ class Utility:
         except Exception as e:
             logger.exception(f"An unexpected error occurred while fetching from {server_name}: {e}")
             return None, None, None
+        
+    @staticmethod
+    def get_available_offset_sources():
+        """
+        Returns list of available offset sources for UI dropdown
+        """
+        sources = Utility.load_offset_sources()
+        source_list = []
+        
+        # Add dynamic sources
+        for source_id, source_config in sources.items():
+            source_list.append({
+                "id": source_id,
+                "name": source_config["name"],
+                "author": source_config["author"],
+                "display": f"{source_config['name']} ({source_config['author']})"
+            })
+        
+        # Add local option
+        source_list.append({
+            "id": "local",
+            "name": "Local Files",
+            "author": "User",
+            "display": "Local Files"
+        })
+        
+        return source_list
 
     @staticmethod
     def check_for_updates(current_version):

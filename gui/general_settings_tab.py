@@ -1,5 +1,7 @@
 import customtkinter as ctk
 import os
+import requests
+import orjson
 from pathlib import Path
 from tkinter import filedialog, messagebox
 from classes.config_manager import ConfigManager
@@ -165,6 +167,39 @@ def create_features_section(main_window, parent):
             is_last=(i == len(settings_list) - 1)
         )
 
+def load_dynamic_offset_sources():
+    """Load available offset sources from remote JSON file."""
+    try:
+        response = requests.get(
+            'https://raw.githubusercontent.com/Jesewe/VioletWing/refs/heads/main/src/offsets.json',
+            timeout=10
+        )
+        response.raise_for_status()
+        sources_data = orjson.loads(response.content)
+        
+        # Validate structure and create display names
+        valid_sources = {}
+        for source_id, source_config in sources_data.items():
+            required_keys = ["name", "author", "repository", "offsets_url", "client_dll_url", "buttons_url"]
+            if all(key in source_config for key in required_keys):
+                valid_sources[source_id] = source_config
+        
+        return valid_sources
+    except Exception:
+        # Return default sources if remote fetch fails
+        return {
+            "a2x": {
+                "name": "a2x Source",
+                "author": "a2x",
+                "repository": "a2x/cs2-dumper"
+            },
+            "jesewe": {
+                "name": "Jesewe Source", 
+                "author": "Jesewe",
+                "repository": "Jesewe/cs2-dumper"
+            }
+        }
+
 def create_offsets_section(main_window, parent):
     """Create section for configuring offset source and local file selection."""
     # Section frame with modern styling
@@ -199,13 +234,37 @@ def create_offsets_section(main_window, parent):
         anchor="e"
     ).pack(side="right")
 
+    # Load available sources dynamically
+    available_sources = load_dynamic_offset_sources()
+    
+    # Create dropdown values with proper display names
+    dropdown_values = []
+    source_mapping = {}  # Maps display names to source IDs
+    
+    for source_id, source_config in available_sources.items():
+        display_name = f"{source_config['name']} ({source_config['author']})"
+        dropdown_values.append(display_name)
+        source_mapping[display_name] = source_id
+    
+    # Add local option
+    dropdown_values.append("Local Files")
+    source_mapping["Local Files"] = "local"
+
+    # Get current source and find its display name
+    current_source = main_window.triggerbot.config["General"].get("OffsetSource", "a2x")
+    current_display = "Local Files" if current_source == "local" else next(
+        (f"{config['name']} ({config['author']})" 
+         for sid, config in available_sources.items() if sid == current_source),
+        f"{available_sources.get('a2x', {}).get('name', 'a2x Source')} (a2x)"
+    )
+
     # Offset source dropdown
-    main_window.offset_source_var = ctk.StringVar(value=main_window.triggerbot.config["General"].get("OffsetSource", "server").capitalize())
+    main_window.offset_source_var = ctk.StringVar(value=current_display)
     offset_dropdown = ctk.CTkOptionMenu(
         header,
         variable=main_window.offset_source_var,
-        values=["Server", "JeseweSource", "Local"],
-        command=lambda e: update_offset_source(main_window, e),
+        values=dropdown_values,
+        command=lambda display_name: update_offset_source(main_window, source_mapping[display_name]),
         font=("Chivo", 14),
         dropdown_font=("Chivo", 14),
         corner_radius=12,
@@ -217,7 +276,7 @@ def create_offsets_section(main_window, parent):
 
     # Frame for local file selection (hidden by default)
     main_window.local_files_frame = ctk.CTkFrame(section, fg_color="transparent")
-    if main_window.offset_source_var.get() == "Local":
+    if current_source == "local":
         main_window.local_files_frame.pack(fill="x", padx=40, pady=(0, 40))
 
     # List of files for selection
@@ -289,9 +348,19 @@ def create_file_selector(main_window, parent, label_text, filename, description)
             main_window.triggerbot.config["General"][config_key] = file_path
             main_window.save_settings(show_message=False)
 
+    # Check if file is already selected and show it
+    config_key = {
+        "offsets.json": "OffsetsFile",
+        "client_dll.json": "ClientDLLFile",
+        "buttons.json": "ButtonsFile"
+    }[filename]
+    
+    current_file = main_window.triggerbot.config["General"].get(config_key, "")
+    button_text = f"Selected: {os.path.basename(current_file)}" if current_file and os.path.exists(current_file) else f"Select {filename}"
+
     file_button = ctk.CTkButton(
         button_frame,
-        text=f"Select {filename}",
+        text=button_text,
         font=("Chivo", 14),
         corner_radius=10,
         fg_color=("#D5006D", "#E91E63"),
@@ -300,9 +369,9 @@ def create_file_selector(main_window, parent, label_text, filename, description)
     )
     file_button.pack()
 
-def update_offset_source(main_window, selected):
+def update_offset_source(main_window, selected_source_id):
     """Update offset source and show/hide file selection frame."""
-    main_window.triggerbot.config["General"]["OffsetSource"] = selected.lower()
+    main_window.triggerbot.config["General"]["OffsetSource"] = selected_source_id
     main_window.save_settings(show_message=False)
 
     # Show messagebox to inform user about restart requirement
@@ -312,7 +381,7 @@ def update_offset_source(main_window, selected):
     )
 
     # Show/hide local files frame
-    if selected == "Local":
+    if selected_source_id == "local":
         main_window.local_files_frame.pack(fill="x", padx=40, pady=(0, 40))
     else:
         main_window.local_files_frame.pack_forget()

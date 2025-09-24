@@ -31,7 +31,7 @@ class ConfigManager:
             "Overlay": False,
             "Bunnyhop": False,
             "Noflash": False,
-            "OffsetSource": "server",
+            "OffsetSource": "a2x",
             "OffsetsFile": str(Path(OFFSETS_DIRECTORY) / "offsets.json"),
             "ClientDLLFile": str(Path(OFFSETS_DIRECTORY) / "client_dll.json"),
             "ButtonsFile": str(Path(OFFSETS_DIRECTORY) / "buttons.json")
