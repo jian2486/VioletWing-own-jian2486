@@ -1,0 +1,19 @@
+
+{
+    "a2x": {
+        "name": "A2X Source",
+        "author": "a2x",
+        "repository": "a2x/cs2-dumper",
+        "offsets_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json",
+        "client_dll_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json",
+        "buttons_url": "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/buttons.json"
+    },
+    "jesewe": {
+        "name": "Jesewe Source",
+        "author": "Jesewe",
+        "repository": "Jesewe/cs2-dumper",
+        "offsets_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/offsets.json",
+        "client_dll_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/client_dll.json",
+        "buttons_url": "https://raw.githubusercontent.com/Jesewe/cs2-dumper/main/output/buttons.json"
+    }
+}
