@@ -360,7 +360,7 @@ def fetch_last_update(main_window):
 
                 # Update UI
                 update_ui(formatted_timestamp, "#22c55e")
-                logger.info("Successfully fetched last update: %s", formatted_timestamp)
+                logger.debug("Successfully fetched last update: %s", formatted_timestamp)
                 return
 
             except requests.exceptions.HTTPError as e:
@@ -456,7 +456,7 @@ def fetch_cs2_latest_patch(main_window):
 
                     # Update UI
                     update_ui(formatted_date, "#22c55e")
-                    logger.info("Successfully fetched CS2 patch date: %s", formatted_date)
+                    logger.debug("Successfully fetched CS2 patch date: %s", formatted_date)
                     return
                 else:
                     raise ValueError("No news items found in Steam API response")

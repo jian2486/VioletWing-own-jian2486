@@ -11,7 +11,7 @@ from classes.utility import Utility
 # Initialize the logger for consistent logging
 logger = Logger.get_logger()
 # Define the main loop sleep time for reduced CPU usage
-MAIN_LOOP_SLEEP = 0.05
+MAIN_LOOP_SLEEP = 0.001  # Reduced for better timing precision
 # Constants for bunnyhop
 FORCE_JUMP_ACTIVE = 65537
 FORCE_JUMP_INACTIVE = 256
@@ -54,19 +54,6 @@ class CS2Bunnyhop:
             logger.error(f"Error setting force jump address: {e}")
             return False
 
-    def perform_jump(self, is_jumping: bool) -> bool:
-        """Perform a single jump action."""
-        try:
-            if not is_jumping:
-                self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_ACTIVE)
-                return True
-            else:
-                self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_INACTIVE)
-                return False
-        except Exception as e:
-            logger.error(f"Error performing jump: {e}")
-            return is_jumping
-
     def start(self) -> None:
         """Start the Bunnyhop."""
         if not self.initialize_force_jump():
@@ -77,9 +64,11 @@ class CS2Bunnyhop:
 
         is_game_active = Utility.is_game_active
         sleep = time.sleep
-        is_jumping = False
-        last_jump_time = 0
-
+        
+        # Simple timing variables
+        last_action_time = 0
+        jump_active = False
+        
         while not self.stop_event.is_set():
             try:
                 if not is_game_active():
@@ -87,14 +76,38 @@ class CS2Bunnyhop:
                     continue
 
                 current_time = time.time()
-                key_state = ctypes.windll.user32.GetAsyncKeyState(Utility.get_vk_code(self.jump_key)) & 0x8000
+                key_pressed = ctypes.windll.user32.GetAsyncKeyState(Utility.get_vk_code(self.jump_key)) & 0x8000
 
-                if key_state and (current_time - last_jump_time) >= self.jump_delay:
-                    is_jumping = self.perform_jump(is_jumping)
-                    if is_jumping:
-                        last_jump_time = current_time
+                if key_pressed:
+                    # Key is pressed - handle jump timing
+                    if current_time - last_action_time >= self.jump_delay:
+                        if not jump_active:
+                            # Activate jump
+                            try:
+                                self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_ACTIVE)
+                                jump_active = True
+                                last_action_time = current_time
+                            except Exception as e:
+                                logger.error(f"Error activating jump: {e}")
+                        else:
+                            # Deactivate jump
+                            try:
+                                self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_INACTIVE)
+                                jump_active = False
+                                last_action_time = current_time
+                            except Exception as e:
+                                logger.error(f"Error deactivating jump: {e}")
+                else:
+                    # Key not pressed - ensure jump is inactive
+                    if jump_active:
+                        try:
+                            self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_INACTIVE)
+                            jump_active = False
+                        except Exception as e:
+                            logger.error(f"Error deactivating jump: {e}")
 
                 sleep(MAIN_LOOP_SLEEP)
+                
             except Exception as e:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
                 sleep(MAIN_LOOP_SLEEP)
@@ -103,4 +116,12 @@ class CS2Bunnyhop:
         """Stop the Bunnyhop and clean up resources."""
         self.is_running = False
         self.stop_event.set()
+        
+        # Ensure jump is deactivated when stopping
+        if self.force_jump_address:
+            try:
+                self.memory_manager.write_int(self.force_jump_address, FORCE_JUMP_INACTIVE)
+            except Exception as e:
+                logger.error(f"Error deactivating jump during stop: {e}")
+        
         logger.debug("Bunnyhop stopped.")

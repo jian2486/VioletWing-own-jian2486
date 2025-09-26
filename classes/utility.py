@@ -35,7 +35,7 @@ class Utility:
                     logger.error(f"Source '{source_id}' missing keys: {missing_keys}")
                     continue
             
-            logger.info(f"Loaded {len(sources_data)} offsets sources from remote offsets.json")
+            logger.debug(f"Loaded {len(sources_data)} offsets sources from remote offsets.json")
             return sources_data
             
         except Exception as e:
